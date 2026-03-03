@@ -1,0 +1,100 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Expo Material3 Theme",
+  "projectDescription": "Manage Material 3 dynamic theme in your React Native and Expo apps",
+  "theme": "palm",
+  "primaryColor": "#6750A4",
+  "lightColor": "#E8DEF8",
+  "darkColor": "#4F378B",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/material3-theme",
+              "concepts/dynamic-vs-custom",
+              "concepts/theme-structure"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/basic-usage",
+              "guides/custom-themes",
+              "guides/react-native-paper",
+              "guides/updating-themes"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/color-fidelity",
+              "advanced/activity-recreation",
+              "advanced/typescript"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Hooks",
+            "pages": [
+              "api/hooks/use-material3-theme"
+            ]
+          },
+          {
+            "group": "Functions",
+            "pages": [
+              "api/functions/get-material3-theme",
+              "api/functions/get-material3-theme-async",
+              "api/functions/create-material3-theme"
+            ]
+          },
+          {
+            "group": "Constants",
+            "pages": [
+              "api/constants/is-dynamic-theme-supported"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "api/types/material3-theme",
+              "api/types/material3-scheme"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Retrieve Material 3 dynamic theme from Android 12+ devices",
+    "Generate custom Material 3 themes from source colors",
+    "Compatible with react-native-paper theming system",
+    "Full TypeScript support with comprehensive type definitions",
+    "Color fidelity support for accurate source color matching"
+  ],
+  "publicApiSurface": [
+    "useMaterial3Theme",
+    "getMaterial3Theme",
+    "getMaterial3ThemeAsync",
+    "createMaterial3Theme",
+    "isDynamicThemeSupported",
+    "Material3Theme",
+    "Material3Scheme",
+    "Material3ThemeOptions"
+  ]
+}
