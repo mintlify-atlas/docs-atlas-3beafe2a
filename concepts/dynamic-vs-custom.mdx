@@ -1,0 +1,195 @@
+---
+title: Dynamic vs Custom Themes
+description: Choosing between system-based dynamic themes and custom source color themes
+---
+
+## Two Approaches to Theming
+
+The `expo-material3-theme` library supports two distinct approaches to theming your app:
+
+1. **Dynamic Theme**: Uses colors from the user's device (Android 12+ only)
+2. **Custom Theme**: Generates colors from a source color you provide
+
+## Dynamic Theme (System-Based)
+
+Dynamic themes retrieve the Material 3 color scheme directly from the Android system, which generates it based on the user's wallpaper.
+
+### When to Use Dynamic Themes
+
+- You want maximum personalization for your users
+- Your app's brand allows for flexible color schemes
+- You're targeting Android 12+ devices
+- You want your app to feel native to the Android ecosystem
+
+### Implementation
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  // Retrieves system theme on Android 12+
+  // Falls back to #3E8260 on unsupported devices
+  const { theme } = useMaterial3Theme({ 
+    fallbackSourceColor: '#3E8260' 
+  });
+
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      <Button color={theme[colorScheme].primary}>Themed button</Button>
+    </View>
+  );
+}
+```
+
+<Info>
+  Always provide a `fallbackSourceColor` to ensure consistent theming on iOS and older Android devices.
+</Info>
+
+### Platform Support Check
+
+You can detect whether dynamic theming is supported:
+
+```tsx
+import { isDynamicThemeSupported } from '@pchmn/expo-material3-theme';
+
+if (isDynamicThemeSupported) {
+  console.log('Running on Android 12+ with dynamic theme support');
+} else {
+  console.log('Fallback theme will be used');
+}
+```
+
+The `isDynamicThemeSupported` constant checks for:
+- Android platform (`Platform.OS === 'android'`)
+- Android 12 or higher (`Platform.Version >= 31`)
+- Native module availability
+
+See [index.ts:12-13](https://github.com/pchmn/expo-material3-theme/blob/main/src/index.ts#L12-L13) for implementation details.
+
+## Custom Theme (Source Color)
+
+Custom themes generate a complete Material 3 color palette from a single source color using Google's Material Color Utilities.
+
+### When to Use Custom Themes
+
+- Your brand requires specific colors
+- You need consistent theming across iOS and Android
+- You want to offer users color customization within your app
+- You're building a themed experience (e.g., team colors, seasonal themes)
+
+### Implementation
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  // Always uses theme based on #3E8260, even on Android 12+
+  const { theme } = useMaterial3Theme({ 
+    sourceColor: '#3E8260' 
+  });
+
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      <Button color={theme[colorScheme].primary}>Themed button</Button>
+    </View>
+  );
+}
+```
+
+### Color Fidelity Option
+
+Material 3 offers different color schemes based on how closely the generated palette matches your source color:
+
+```tsx
+const { theme } = useMaterial3Theme({ 
+  sourceColor: '#3E8260',
+  colorFidelity: true // Uses SchemeFidelity for closer color matching
+});
+```
+
+<Info>
+  Color fidelity affects how the generated palette relates to your source color. Learn more in the [Material 3 documentation](https://m3.material.io/styles/color/advanced/adjust-existing-colors).
+</Info>
+
+See [createMaterial3Theme.ts:33-41](https://github.com/pchmn/expo-material3-theme/blob/main/src/utils/createMaterial3Theme.ts#L33-L41) for the implementation.
+
+## Comparison Table
+
+| Feature | Dynamic Theme | Custom Theme |
+|---------|--------------|-------------|
+| **Platform** | Android 12+ only | All platforms |
+| **Color Source** | User's wallpaper | Your source color |
+| **Consistency** | Varies per device | Identical everywhere |
+| **Personalization** | Maximum | Brand-controlled |
+| **Updates** | Automatic on wallpaper change* | Static unless you change it |
+| **Brand Control** | Limited | Complete |
+
+*Note: Android recreates activities when the system theme changes (see [Activity Recreation](/advanced/activity-recreation)).
+
+## Switching Themes Dynamically
+
+You can allow users to switch between system and custom themes:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { View, Button } from 'react-native';
+
+function App() {
+  const { theme, updateTheme, resetTheme } = useMaterial3Theme({
+    fallbackSourceColor: '#6750A4'
+  });
+
+  return (
+    <View>
+      {/* Switch to custom green theme */}
+      <Button onPress={() => updateTheme('#3E8260')}>
+        Use Green Theme
+      </Button>
+      
+      {/* Switch to custom blue theme */}
+      <Button onPress={() => updateTheme('#0061A4')}>
+        Use Blue Theme
+      </Button>
+      
+      {/* Reset to system theme (or fallback) */}
+      <Button onPress={() => resetTheme()}>
+        Reset to System Theme
+      </Button>
+    </View>
+  );
+}
+```
+
+<Info>
+  The `updateTheme()` and `resetTheme()` functions change the theme in your app's state only—they don't modify the system-level theme.
+</Info>
+
+## Implementation Details
+
+Behind the scenes, the library determines which theme to use:
+
+```tsx
+// From index.ts:40-55
+export function useMaterial3Theme(options?: UseMaterial3ThemeOptions) {
+  const { fallbackSourceColor = '#6750A4', sourceColor, ...themeOptions } = options || {};
+
+  const [theme, setTheme] = useState<Material3Theme>(
+    // If sourceColor is provided, always use custom theme
+    sourceColor 
+      ? createMaterial3Theme(sourceColor, themeOptions) 
+      : getMaterial3Theme(fallbackSourceColor, options) // Otherwise, try system theme
+  );
+
+  // ... updateTheme and resetTheme functions
+}
+```
+
+## Next Steps
+
+- Understand the [Theme Structure](/concepts/theme-structure)
+- Learn about [react-native-paper Integration](/guides/react-native-paper)
+- Explore the [API Reference](/api/hooks/use-material3-theme)

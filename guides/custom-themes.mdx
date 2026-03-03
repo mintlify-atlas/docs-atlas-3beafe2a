@@ -1,0 +1,228 @@
+---
+title: Custom Themes
+description: Create custom Material 3 themes using source colors instead of the system theme
+---
+
+## Using a Custom Source Color
+
+Instead of using the system theme, you can generate a Material 3 theme from any color by passing the `sourceColor` parameter to `useMaterial3Theme`:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  // Theme returned will be based on #3E8260 color
+  const { theme } = useMaterial3Theme({ sourceColor: '#3E8260' });
+
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      <Button color={theme[colorScheme].primary}>Themed button</Button>
+    </View>
+  );
+}
+```
+
+When you provide a `sourceColor`, the library will:
+1. Generate a complete Material 3 color palette from that single color
+2. Create both light and dark theme variants
+3. Override the system theme (even on Android 12+ devices)
+
+## Color Fidelity
+
+Material 3 offers two approaches to generating themes from source colors:
+
+### Standard (Default)
+
+The default behavior creates a harmonious palette that may shift the hue slightly for better color harmony:
+
+```tsx
+const { theme } = useMaterial3Theme({ sourceColor: '#3E8260' });
+```
+
+### High Fidelity
+
+When you need to preserve the exact hue of your source color, use the `colorFidelity` option:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme({ 
+    sourceColor: '#3E8260', 
+    colorFidelity: true 
+  });
+
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      <Button color={theme[colorScheme].primary}>Themed button</Button>
+    </View>
+  );
+}
+```
+
+<Note>
+  Color fidelity mode uses Material 3's `SchemeFidelity` which preserves the hue of your source color more closely. Learn more in the [Material 3 color documentation](https://m3.material.io/styles/color/advanced/adjust-existing-colors#cb49eeb4-3bbd-4521-9612-0856c27f91ef).
+</Note>
+
+## When to Use Custom vs System Theme
+
+<CodeGroup>
+```tsx System Theme (Recommended)
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+
+// Let users' wallpaper determine the theme
+const { theme } = useMaterial3Theme();
+```
+
+```tsx Custom Theme
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+
+// Use your brand color
+const { theme } = useMaterial3Theme({ 
+  sourceColor: '#3E8260' 
+});
+```
+</CodeGroup>
+
+### Use System Theme When:
+- You want to respect the user's device personalization
+- Your app doesn't have strict brand color requirements
+- You want to provide the most native Android 12+ experience
+
+### Use Custom Theme When:
+- You need to match specific brand colors
+- You want consistent theming across all platforms (iOS and Android)
+- You're building a themed experience (e.g., different themes per section)
+
+## createMaterial3Theme Function
+
+For generating themes outside of React components, use the `createMaterial3Theme` function:
+
+```tsx
+import { createMaterial3Theme } from '@pchmn/expo-material3-theme';
+
+// Generate a theme immediately
+const customTheme = createMaterial3Theme('#3E8260');
+
+// With color fidelity
+const fidelityTheme = createMaterial3Theme('#3E8260', { 
+  colorFidelity: true 
+});
+
+// Access colors directly
+console.log(customTheme.light.primary);
+console.log(customTheme.dark.primary);
+```
+
+This is useful for:
+- Generating themes at app initialization
+- Pre-computing themes for theme selection UIs
+- Server-side theme generation
+- Testing and prototyping
+
+## Combining Fallback and Custom Themes
+
+You can combine both approaches - use the system theme by default, but provide a custom fallback:
+
+```tsx
+const { theme } = useMaterial3Theme({ 
+  fallbackSourceColor: '#3E8260' // Used only on iOS and Android < 12
+});
+// On Android 12+: uses system theme from wallpaper
+// On iOS/older Android: uses theme generated from #3E8260
+```
+
+Or force a custom theme everywhere:
+
+```tsx
+const { theme } = useMaterial3Theme({ 
+  sourceColor: '#3E8260' // Used on ALL devices
+});
+// All devices use theme generated from #3E8260
+```
+
+## Dynamic Source Color Selection
+
+You can change the source color dynamically, but note that `sourceColor` is only read during hook initialization. To update themes dynamically, see the [Updating Themes](/guides/updating-themes) guide:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useState } from 'react';
+import { View, Button } from 'react-native';
+
+function App() {
+  const { theme, updateTheme } = useMaterial3Theme();
+  
+  return (
+    <View>
+      <Button onPress={() => updateTheme('#FF5722')}>
+        Use Red Theme
+      </Button>
+      <Button onPress={() => updateTheme('#4CAF50')}>
+        Use Green Theme
+      </Button>
+    </View>
+  );
+}
+```
+
+## Example: Theme Picker
+
+Here's a complete example of a theme picker component:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+
+const PRESET_COLORS = [
+  '#6750A4', // Purple (Material default)
+  '#3E8260', // Green
+  '#FF5722', // Red
+  '#2196F3', // Blue
+  '#FF9800', // Orange
+];
+
+function ThemePicker() {
+  const { updateTheme, resetTheme } = useMaterial3Theme();
+
+  return (
+    <View style={styles.container}>
+      {PRESET_COLORS.map((color) => (
+        <TouchableOpacity
+          key={color}
+          style={[styles.colorButton, { backgroundColor: color }]}
+          onPress={() => updateTheme(color)}
+        />
+      ))}
+      <TouchableOpacity 
+        style={styles.resetButton}
+        onPress={() => resetTheme()}
+      >
+        <Text>Reset to System</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 16,
+  },
+  colorButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  resetButton: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+});
+```

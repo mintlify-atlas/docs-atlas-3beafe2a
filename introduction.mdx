@@ -1,0 +1,68 @@
+---
+title: Introduction
+description: Retrieve Material 3 dynamic themes from Android 12+ devices and use them in your React Native/Expo apps
+---
+
+# Expo Material 3 Theme
+
+This [Expo module](https://docs.expo.dev/modules/overview/) allows you to retrieve the [Material 3 dynamic theme](https://developer.android.com/develop/ui/views/theming/dynamic-colors) from Android 12+ devices, so that you can use it in your Expo (or bare React Native) app.
+
+For devices not compatible (iOS or older Android versions), a fallback theme is automatically returned.
+
+<img src="https://user-images.githubusercontent.com/12658241/225726041-d086724a-9bef-49e1-a21b-2a91d5a3b5e9.png" alt="Material 3 theme example" />
+
+## Key Features
+
+- **Dynamic theme retrieval** - Retrieve Material 3 dynamic theme from Android 12+ devices (or a fallback theme if device is not compatible)
+- **Custom theme generation** - Generate Material 3 theme based on a source color using [`@material/material-color-utilities`](https://github.com/material-foundation/material-color-utilities/tree/main/typescript)
+- **react-native-paper compatibility** - Material 3 theme compatible with [`react-native-paper`](https://callstack.github.io/react-native-paper/)
+
+## Quick Links
+
+<CardGroup cols={3}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install the library in your Expo or React Native project
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get started with your first Material 3 themed app
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/hooks/use-material3-theme">
+    Explore the complete API documentation
+  </Card>
+</CardGroup>
+
+## Platform Support
+
+<Info>
+  **Android 12+ (API 31+)** - Full dynamic theme support based on system wallpaper
+  
+  **iOS & Android 11 and below** - Fallback theme generated from a customizable source color (default: `#6750A4`)
+</Info>
+
+<Note>
+  When Material 3 dynamic theme is changed on Android 12+ devices, it is a configuration change and the system will recreate the Activity. This may cause local state to be lost if not properly handled.
+  
+  See the [Activity recreation](/advanced/activity-recreation) guide for more details.
+</Note>
+
+## How It Works
+
+The library provides a simple hook-based API to access Material 3 themes:
+
+1. On Android 12+, it retrieves the system's dynamic color scheme
+2. On other platforms, it generates a theme from a fallback color
+3. You can also override the system theme with a custom source color
+4. Themes include both light and dark variants with complete Material 3 color palettes
+
+## What's Next?
+
+Get started by installing the library and building your first themed app:
+
+<CardGroup cols={2}>
+  <Card title="Install the library" icon="download" href="/installation">
+    Follow the installation guide for Expo or bare React Native
+  </Card>
+  <Card title="Build your first app" icon="rocket" href="/quickstart">
+    Create a simple app with Material 3 theming
+  </Card>
+</CardGroup>

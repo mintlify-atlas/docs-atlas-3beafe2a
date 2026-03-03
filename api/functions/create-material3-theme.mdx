@@ -1,0 +1,115 @@
+---
+title: createMaterial3Theme
+description: Create a Material 3 theme based on a source color
+---
+
+Function that creates a Material 3 theme based on a source color. This function always generates a new theme from the provided color, regardless of the device's system theme.
+
+The theme is generated using Google's [`@material/material-color-utilities`](https://github.com/material-foundation/material-color-utilities/tree/main/typescript) library, which implements the Material 3 color system.
+
+## Function Signature
+
+```typescript
+function createMaterial3Theme(
+  sourceColor: string,
+  options?: Material3ThemeOptions
+): Material3Theme
+```
+
+## Parameters
+
+<ParamField path="sourceColor" type="string" required>
+  Source color for the theme. Must be a valid hex color string (e.g., `#6750A4`). This color serves as the foundation for generating all other colors in the Material 3 theme palette.
+</ParamField>
+
+<ParamField path="options" type="Material3ThemeOptions">
+  Optional configuration for theme generation.
+  
+  <Expandable title="properties">
+    <ParamField path="colorFidelity" type="boolean" default={false}>
+      Apply color fidelity to make scheme colors better match the `sourceColor`. When enabled, the generated theme colors will more closely align with the source color.
+      
+      Learn more about [color fidelity in Material 3](https://m3.material.io/styles/color/advanced/adjust-existing-colors#cb49eeb4-3bbd-4521-9612-0856c27f91ef).
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Return Type
+
+<ResponseField name="Material3Theme" type="object">
+  An object containing both light and dark color schemes.
+  
+  <Expandable title="properties">
+    <ResponseField name="light" type="Material3Scheme">
+      Light color scheme with all Material 3 color tokens including:
+      - Primary, secondary, and tertiary color roles
+      - Surface and background colors
+      - Error colors
+      - Elevation levels
+      - Custom surface variants (container, bright, dim, etc.)
+    </ResponseField>
+    
+    <ResponseField name="dark" type="Material3Scheme">
+      Dark color scheme with all Material 3 color tokens following the same structure as the light scheme.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Color Utilities
+
+This function uses [`@material/material-color-utilities`](https://github.com/material-foundation/material-color-utilities/tree/main/typescript) to generate the theme. The library implements Material Design's HCT (Hue, Chroma, Tone) color space, which ensures:
+
+- Perceptually accurate colors
+- Consistent contrast ratios
+- Harmonious color palettes
+- Accessibility compliance
+
+## Examples
+
+### Basic Usage
+
+Create a theme from a hex color:
+
+```typescript
+const theme = createMaterial3Theme('#6750A4');
+```
+
+### With Color Fidelity
+
+Enable color fidelity for better source color matching:
+
+```typescript
+const theme = createMaterial3Theme('#6750A4', { colorFidelity: true });
+```
+
+### Custom Brand Color
+
+Create a theme from your brand color:
+
+```typescript
+const theme = createMaterial3Theme('#3E8260', { colorFidelity: true });
+```
+
+### Dynamic Theme Updates
+
+Use with state management to update themes dynamically:
+
+```typescript
+function ThemeProvider({ children }) {
+  const [sourceColor, setSourceColor] = useState('#6750A4');
+  const theme = createMaterial3Theme(sourceColor);
+  
+  return (
+    <ThemeContext.Provider value={{ theme, setSourceColor }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+```
+
+## Related
+
+- [getMaterial3Theme](/api/functions/get-material3-theme) - Get system theme with fallback
+- [getMaterial3ThemeAsync](/api/functions/get-material3-theme-async) - Async version of system theme getter
+- [useMaterial3Theme](/api/hooks/use-material3-theme) - React hook for theme management
+- [@material/material-color-utilities](https://github.com/material-foundation/material-color-utilities/tree/main/typescript) - Underlying color library

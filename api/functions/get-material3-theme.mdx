@@ -1,0 +1,91 @@
+---
+title: getMaterial3Theme
+description: Get the Material 3 theme from the system (Android 12+) or fallback theme
+---
+
+Function that returns the theme retrieved from the user's device (works only on Android 12+). If the system does not support Material 3 dynamic theming, it will return a theme based on the fallback source color.
+
+## Function Signature
+
+```typescript
+function getMaterial3Theme(
+  fallbackSourceColor?: string,
+  options?: Material3ThemeOptions
+): Material3Theme
+```
+
+## Parameters
+
+<ParamField path="fallbackSourceColor" type="string" default="#6750A4">
+  Source color for the fallback theme. This color is used to generate a Material 3 theme when the device does not support dynamic theming (Android versions below 12).
+</ParamField>
+
+<ParamField path="options" type="Material3ThemeOptions">
+  Optional configuration for theme generation.
+  
+  <Expandable title="properties">
+    <ParamField path="colorFidelity" type="boolean" default={false}>
+      Apply color fidelity to make scheme colors better match the `fallbackSourceColor` if used. When enabled, the generated theme colors will more closely align with the source color.
+      
+      Learn more about [color fidelity in Material 3](https://m3.material.io/styles/color/advanced/adjust-existing-colors#cb49eeb4-3bbd-4521-9612-0856c27f91ef).
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Return Type
+
+<ResponseField name="Material3Theme" type="object">
+  An object containing both light and dark color schemes.
+  
+  <Expandable title="properties">
+    <ResponseField name="light" type="Material3Scheme">
+      Light color scheme with all Material 3 color tokens.
+    </ResponseField>
+    
+    <ResponseField name="dark" type="Material3Scheme">
+      Dark color scheme with all Material 3 color tokens.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Fallback Behavior
+
+The function uses the following fallback logic:
+
+- **Android 12+ (API 31+)**: Returns the system's dynamic theme colors
+- **Android versions below 12 or other platforms**: Generates a theme using the `fallbackSourceColor`
+- **No system theme available**: Falls back to generating a theme from the `fallbackSourceColor`
+
+This ensures your app always has a Material 3 theme, regardless of the platform or Android version.
+
+## Examples
+
+### Basic Usage
+
+Get the theme without any parameters (uses default fallback color `#6750A4`):
+
+```typescript
+const theme = getMaterial3Theme();
+```
+
+### Custom Fallback Color
+
+Specify a custom fallback color:
+
+```typescript
+const theme = getMaterial3Theme('#6750A4');
+```
+
+### With Color Fidelity
+
+Enable color fidelity for better source color matching:
+
+```typescript
+const theme = getMaterial3Theme('#6750A4', { colorFidelity: true });
+```
+
+## Related
+
+- [getMaterial3ThemeAsync](/api/functions/get-material3-theme-async) - Async version of this function
+- [createMaterial3Theme](/api/functions/create-material3-theme) - Create theme from source color only
+- [useMaterial3Theme](/api/hooks/use-material3-theme) - React hook for theme management

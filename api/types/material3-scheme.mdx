@@ -1,0 +1,245 @@
+---
+title: Material3Scheme
+description: Complete type definition for a Material 3 color scheme with all color tokens and elevation levels
+---
+
+## Overview
+
+`Material3Scheme` defines all the color tokens for a single color scheme (either light or dark mode). It includes primary, secondary, tertiary colors, surface variants, error colors, and elevation levels.
+
+## Type Definition
+
+```typescript
+export type Material3Scheme = SystemScheme & {
+  error: string;
+  onError: string;
+  errorContainer: string;
+  onErrorContainer: string;
+
+  shadow: string;
+  scrim: string;
+  surfaceDisabled: string;
+  onSurfaceDisabled: string;
+  backdrop: string;
+
+  surfaceContainer: string;
+  surfaceContainerLow: string;
+  surfaceContainerLowest: string;
+  surfaceContainerHigh: string;
+  surfaceContainerHighest: string;
+  surfaceBright: string;
+  surfaceDim: string;
+  surfaceTint: string;
+
+  elevation: {
+    level0: string;
+    level1: string;
+    level2: string;
+    level3: string;
+    level4: string;
+    level5: string;
+  };
+};
+```
+
+The `SystemScheme` type includes:
+
+```typescript
+export type SystemScheme = {
+  primary: string;
+  onPrimary: string;
+  primaryContainer: string;
+  onPrimaryContainer: string;
+
+  secondary: string;
+  onSecondary: string;
+  secondaryContainer: string;
+  onSecondaryContainer: string;
+
+  tertiary: string;
+  onTertiary: string;
+  tertiaryContainer: string;
+  onTertiaryContainer: string;
+
+  background: string;
+  onBackground: string;
+
+  surface: string;
+  onSurface: string;
+  surfaceVariant: string;
+  onSurfaceVariant: string;
+
+  outline: string;
+  outlineVariant: string;
+
+  inverseSurface: string;
+  inverseOnSurface: string;
+  inversePrimary: string;
+};
+```
+
+## Color Properties
+
+### Primary Colors
+
+- `primary` - Main brand color used for key components
+- `onPrimary` - Text/icon color on primary backgrounds
+- `primaryContainer` - Standout fill color for key components
+- `onPrimaryContainer` - Text/icon color on primary containers
+
+### Secondary Colors
+
+- `secondary` - Accent color for less prominent components
+- `onSecondary` - Text/icon color on secondary backgrounds
+- `secondaryContainer` - Tonal fill color for secondary components
+- `onSecondaryContainer` - Text/icon color on secondary containers
+
+### Tertiary Colors
+
+- `tertiary` - Contrasting accent color for balance
+- `onTertiary` - Text/icon color on tertiary backgrounds
+- `tertiaryContainer` - Tonal fill color for tertiary components
+- `onTertiaryContainer` - Text/icon color on tertiary containers
+
+### Surface Colors
+
+- `surface` - Default background color for components
+- `onSurface` - Text/icon color on surface backgrounds
+- `surfaceVariant` - Alternative surface color for differentiation
+- `onSurfaceVariant` - Text/icon color on surface variants
+- `surfaceContainer` - Container background with subtle elevation
+- `surfaceContainerLow` - Container with minimal elevation
+- `surfaceContainerLowest` - Container with no elevation
+- `surfaceContainerHigh` - Container with high elevation
+- `surfaceContainerHighest` - Container with maximum elevation
+- `surfaceBright` - Bright surface variant (light mode)
+- `surfaceDim` - Dim surface variant (dark mode)
+- `surfaceTint` - Color used to tint surfaces at different elevations
+- `surfaceDisabled` - Surface color for disabled states
+- `onSurfaceDisabled` - Text/icon color for disabled states
+
+### Background Colors
+
+- `background` - Default screen background color
+- `onBackground` - Text/icon color on background
+
+### Error Colors
+
+- `error` - Color for error states and messages
+- `onError` - Text/icon color on error backgrounds
+- `errorContainer` - Container color for error states
+- `onErrorContainer` - Text/icon color on error containers
+
+### Outline Colors
+
+- `outline` - Border color for components
+- `outlineVariant` - Alternative outline color for subtle borders
+
+### Inverse Colors
+
+- `inverseSurface` - Surface color for inverse themes
+- `inverseOnSurface` - Text/icon color on inverse surfaces
+- `inversePrimary` - Primary color for inverse themes
+
+### Utility Colors
+
+- `shadow` - Color for shadows
+- `scrim` - Semi-transparent overlay color
+- `backdrop` - Color for modal backdrops
+
+### Elevation Levels
+
+- `elevation.level0` - Surface at rest (no elevation)
+- `elevation.level1` - Slightly elevated surface (1dp)
+- `elevation.level2` - Low elevated surface (3dp)
+- `elevation.level3` - Medium elevated surface (6dp)
+- `elevation.level4` - High elevated surface (8dp)
+- `elevation.level5` - Highest elevated surface (12dp)
+
+## Usage Examples
+
+### Accessing colors from a scheme
+
+```typescript
+import { getMaterial3Theme } from 'expo-material3-theme';
+
+const theme = getMaterial3Theme();
+const lightScheme = theme.light;
+
+console.log(lightScheme.primary);           // e.g., "#6750A4"
+console.log(lightScheme.surface);           // e.g., "#FFFBFE"
+console.log(lightScheme.elevation.level3);  // e.g., "#E8DEF8"
+```
+
+### Using in components
+
+```typescript
+import { View, Text } from 'react-native';
+import { useMaterial3Theme } from 'expo-material3-theme';
+
+function Card({ elevated = false }) {
+  const { theme } = useMaterial3Theme();
+  const colors = theme.light;
+
+  return (
+    <View
+      style={{
+        backgroundColor: elevated 
+          ? colors.elevation.level2 
+          : colors.surface,
+        borderColor: colors.outline,
+        borderWidth: 1,
+        padding: 16,
+      }}
+    >
+      <Text style={{ color: colors.onSurface }}>
+        Card Content
+      </Text>
+    </View>
+  );
+}
+```
+
+### Error states
+
+```typescript
+import { useMaterial3Theme } from 'expo-material3-theme';
+
+function ErrorBanner({ message }) {
+  const { theme } = useMaterial3Theme();
+  const colors = theme.light;
+
+  return (
+    <View style={{ backgroundColor: colors.errorContainer, padding: 12 }}>
+      <Text style={{ color: colors.onErrorContainer }}>
+        {message}
+      </Text>
+    </View>
+  );
+}
+```
+
+### Supporting both light and dark modes
+
+```typescript
+import { useColorScheme } from 'react-native';
+import { useMaterial3Theme } from 'expo-material3-theme';
+
+function ThemedScreen() {
+  const { theme } = useMaterial3Theme();
+  const colorScheme = useColorScheme();
+  const colors = colorScheme === 'dark' ? theme.dark : theme.light;
+
+  return (
+    <View style={{ backgroundColor: colors.background, flex: 1 }}>
+      <Text style={{ color: colors.onBackground }}>
+        This text adapts to light/dark mode
+      </Text>
+    </View>
+  );
+}
+```
+
+## Related Types
+
+- [`Material3Theme`](/api/types/material3-theme) - The complete theme type containing both light and dark schemes

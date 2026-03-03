@@ -1,0 +1,150 @@
+---
+title: Activity Recreation on Android
+description: Understand how Android handles theme changes and how to preserve your app's state
+---
+
+## Understanding Activity Recreation
+
+When Material 3 dynamic theme is changed on Android 12+ devices, it triggers a configuration change that causes the Android system to recreate your app's Activity. This is standard Android behavior for certain system-level changes.
+
+## Why Activities Are Recreated
+
+Android recreates activities for configuration changes to allow apps to reload resources that might be theme-dependent. On Android 12+ (API level 31), dynamic color changes are considered a configuration change that always triggers activity recreation.
+
+<Warning>
+**This configuration change cannot be disabled.** According to the official [Android documentation](https://developer.android.com/guide/topics/resources/runtime-changes#restrict-activity):
+
+"Some configuration changes always cause the activity to restart. You can't disable them. For example, you can't disable the dynamic colors change introduced in API 32."
+</Warning>
+
+## Impact on Your Application
+
+When the system recreates your Activity due to a theme change, the following occurs:
+
+1. **The current Activity is destroyed** - All component instances are unmounted
+2. **Local state is lost** - Unless properly preserved, component state will reset to initial values
+3. **Visual flickering may occur** - Users might see a brief flash as the app rebuilds its UI
+4. **Network requests may restart** - In-progress operations may be interrupted
+
+<Warning>
+Be aware that when users change their system theme and then return to your app, all local state may be lost (and may cause some flickering) if you don't handle state preservation properly.
+</Warning>
+
+## Handling State Preservation
+
+To provide a smooth user experience, you should implement proper state preservation:
+
+### 1. Use Persistent Storage
+
+For critical state, use persistent storage solutions:
+
+```tsx
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+
+function App() {
+  const [userPreferences, setUserPreferences] = useState(null);
+
+  useEffect(() => {
+    // Restore state on mount
+    AsyncStorage.getItem('userPreferences').then(data => {
+      if (data) setUserPreferences(JSON.parse(data));
+    });
+  }, []);
+
+  const savePreferences = async (prefs) => {
+    setUserPreferences(prefs);
+    await AsyncStorage.setItem('userPreferences', JSON.stringify(prefs));
+  };
+
+  // Your app logic...
+}
+```
+
+### 2. Save Navigation State
+
+If you're using React Navigation, enable state persistence:
+
+```tsx
+import { NavigationContainer } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+function App() {
+  const [navigationState, setNavigationState] = useState();
+
+  useEffect(() => {
+    const restoreState = async () => {
+      const savedState = await AsyncStorage.getItem('navigationState');
+      if (savedState) {
+        setNavigationState(JSON.parse(savedState));
+      }
+    };
+    restoreState();
+  }, []);
+
+  return (
+    <NavigationContainer
+      initialState={navigationState}
+      onStateChange={(state) => 
+        AsyncStorage.setItem('navigationState', JSON.stringify(state))
+      }
+    >
+      {/* Your navigators */}
+    </NavigationContainer>
+  );
+}
+```
+
+### 3. Use Redux or State Management Libraries
+
+State management libraries like Redux, Zustand, or Jotai with persistence middleware can automatically handle state preservation:
+
+```tsx
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const useStore = create(
+  persist(
+    (set) => ({
+      user: null,
+      settings: {},
+      setUser: (user) => set({ user }),
+      setSettings: (settings) => set({ settings }),
+    }),
+    {
+      name: 'app-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);
+```
+
+## Best Practices
+
+<Tip>
+Always test your app by changing the system theme while your app is running to ensure state is preserved correctly.
+</Tip>
+
+1. **Identify critical state** - Determine which parts of your app's state must survive recreation
+2. **Use appropriate storage** - Choose between AsyncStorage, SecureStore, or SQLite based on your needs
+3. **Handle loading states** - Show loading indicators while restoring state from storage
+4. **Test thoroughly** - Change the system theme while your app is in different states to verify behavior
+5. **Minimize flickering** - Use skeleton screens or placeholders during state restoration
+
+<Note>
+This behavior only affects Android 12+ devices with dynamic theme support. iOS and older Android versions do not recreate activities when theme changes occur.
+</Note>
+
+## Testing Activity Recreation
+
+To test how your app handles activity recreation:
+
+1. Open your app on an Android 12+ device or emulator
+2. Navigate to different screens and interact with your app
+3. Open system settings and change the wallpaper or theme
+4. Return to your app and verify that:
+   - You're on the same screen you left
+   - Form data is preserved
+   - Scroll positions are maintained
+   - Any in-progress tasks are handled gracefully

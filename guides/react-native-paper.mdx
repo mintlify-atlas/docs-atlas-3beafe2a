@@ -1,0 +1,295 @@
+---
+title: React Native Paper Integration
+description: Use expo-material3-theme with React Native Paper for Material Design components
+---
+
+## Basic Integration
+
+The theme returned by `expo-material3-theme` is fully compatible with `react-native-paper`. Simply merge the colors with Paper's theme:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useMemo } from 'react';
+import { useColorScheme } from 'react-native';
+import { Button, MD3DarkTheme, MD3LightTheme, Provider as PaperProvider } from 'react-native-paper';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme();
+
+  const paperTheme = useMemo(
+    () =>
+      colorScheme === 'dark' ? { ...MD3DarkTheme, colors: theme.dark } : { ...MD3LightTheme, colors: theme.light },
+    [colorScheme, theme]
+  );
+
+  return (
+    <PaperProvider theme={paperTheme}>
+      <Button>Themed react native paper button</Button>
+    </PaperProvider>
+  );
+}
+```
+
+<Note>
+  Use `useMemo` to avoid recreating the theme object on every render, which would cause Paper components to re-render unnecessarily.
+</Note>
+
+## TypeScript Support
+
+Some colors from `expo-material3-theme` aren't present in React Native Paper's default theme types. Create a custom `useAppTheme` hook for full TypeScript support:
+
+```ts
+import { Material3Scheme } from '@pchmn/expo-material3-theme';
+import { MD3Theme, useTheme } from 'react-native-paper';
+
+export const useAppTheme = useTheme<MD3Theme & { colors: Material3Scheme }};
+
+// Now use useAppTheme() instead of useTheme()
+```
+
+### Using the Custom Hook
+
+```tsx
+import { useAppTheme } from './hooks/useAppTheme';
+import { View, Text } from 'react-native';
+
+function ThemedComponent() {
+  const theme = useAppTheme();
+
+  // Full TypeScript autocomplete for all Material3Scheme colors
+  return (
+    <View style={{ backgroundColor: theme.colors.surfaceContainer }}>
+      <Text style={{ color: theme.colors.onSurface }}>Hello</Text>
+    </View>
+  );
+}
+```
+
+This gives you access to additional colors like:
+- `surfaceContainer`, `surfaceContainerHigh`, etc.
+- `surfaceDisabled`, `onSurfaceDisabled`
+- `backdrop`
+- `elevation.level0` through `elevation.level5`
+
+## Material3ThemeProvider Pattern
+
+For better integration, you can create a custom provider that combines both libraries:
+
+```tsx
+// Material3ThemeProvider.tsx
+import { Material3Scheme, Material3Theme, useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { createContext, useContext } from 'react';
+import { useColorScheme } from 'react-native';
+import {
+  MD3DarkTheme,
+  MD3LightTheme,
+  MD3Theme,
+  Provider as PaperProvider,
+  ProviderProps,
+  useTheme,
+} from 'react-native-paper';
+
+type Material3ThemeProviderProps = {
+  theme: Material3Theme;
+  updateTheme: (sourceColor: string) => void;
+  resetTheme: () => void;
+};
+
+const Material3ThemeProviderContext = createContext<Material3ThemeProviderProps>({} as Material3ThemeProviderProps);
+
+export function Material3ThemeProvider({
+  children,
+  sourceColor,
+  fallbackSourceColor,
+  ...otherProps
+}: ProviderProps & { sourceColor?: string; fallbackSourceColor?: string }) {
+  const colorScheme = useColorScheme();
+
+  const { theme, updateTheme, resetTheme } = useMaterial3Theme({
+    sourceColor,
+    fallbackSourceColor,
+  });
+
+  const paperTheme =
+    colorScheme === 'dark' ? { ...MD3DarkTheme, colors: theme.dark } : { ...MD3LightTheme, colors: theme.light };
+
+  return (
+    <Material3ThemeProviderContext.Provider value={{ theme, updateTheme, resetTheme }}>
+      <PaperProvider theme={paperTheme} {...otherProps}>
+        {children}
+      </PaperProvider>
+    </Material3ThemeProviderContext.Provider>
+  );
+}
+
+export function useMaterial3ThemeContext() {
+  const ctx = useContext(Material3ThemeProviderContext);
+  if (!ctx) {
+    throw new Error('useMaterial3ThemeContext must be used inside Material3ThemeProvider');
+  }
+  return ctx;
+}
+
+export const useAppTheme = useTheme<MD3Theme & { colors: Material3Scheme }>;
+```
+
+### Using the Provider
+
+```tsx
+// App.tsx
+import { Material3ThemeProvider, useAppTheme, useMaterial3ThemeContext } from './Material3ThemeProvider';
+import { View, Button } from 'react-native';
+
+function App() {
+  return (
+    <Material3ThemeProvider>
+      <AppContent />
+    </Material3ThemeProvider>
+  );
+}
+
+function AppContent() {
+  const { updateTheme, resetTheme } = useMaterial3ThemeContext();
+  // react-native-paper theme is always in sync
+  const theme = useAppTheme();
+
+  return (
+    <View style={{ backgroundColor: theme.colors.background }}>
+      {/* Update theme by generating a new one based on #3E8260 color */}
+      <Button onPress={() => updateTheme('#3E8260')}>Update theme</Button>
+      {/* Reset theme to default (system or fallback) */}
+      <Button onPress={() => resetTheme()}>Reset theme</Button>
+    </View>
+  );
+}
+```
+
+## Benefits of Material3ThemeProvider
+
+<CardGroup cols={2}>
+  <Card title="Centralized Theme Management">
+    All theme logic in one place, accessible throughout your app
+  </Card>
+  <Card title="Automatic Sync">
+    Paper components automatically update when theme changes
+  </Card>
+  <Card title="Clean API">
+    Simple hooks for accessing theme and theme controls
+  </Card>
+  <Card title="TypeScript Ready">
+    Full type safety with custom useAppTheme hook
+  </Card>
+</CardGroup>
+
+## Using Paper Components
+
+Once integrated, all React Native Paper components will automatically use your Material 3 theme:
+
+```tsx
+import { Button, Card, Text, Surface } from 'react-native-paper';
+import { View } from 'react-native';
+
+function Example() {
+  return (
+    <View>
+      <Button mode="contained">Primary Button</Button>
+      <Button mode="outlined">Outlined Button</Button>
+      
+      <Card>
+        <Card.Content>
+          <Text variant="titleLarge">Card Title</Text>
+          <Text variant="bodyMedium">Card content</Text>
+        </Card.Content>
+      </Card>
+
+      <Surface elevation={2}>
+        <Text>Elevated Surface</Text>
+      </Surface>
+    </View>
+  );
+}
+```
+
+All components will automatically:
+- Use the correct colors for light/dark mode
+- Update when you call `updateTheme()`
+- Match the Android 12+ system theme (when available)
+- Fall back gracefully on older devices
+
+## Custom Paper Theme Properties
+
+You can still customize other aspects of the Paper theme:
+
+```tsx
+const paperTheme = useMemo(
+  () => ({
+    ...(colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme),
+    colors: theme[colorScheme],
+    // Customize fonts
+    fonts: {
+      // Add custom fonts
+    },
+    // Customize roundness
+    roundness: 8,
+  }),
+  [colorScheme, theme]
+);
+```
+
+## Example: Themed App
+
+Here's a complete example combining everything:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useMemo } from 'react';
+import { useColorScheme, ScrollView } from 'react-native';
+import {
+  Provider as PaperProvider,
+  MD3LightTheme,
+  MD3DarkTheme,
+  Appbar,
+  Button,
+  Card,
+  Text,
+} from 'react-native-paper';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme();
+
+  const paperTheme = useMemo(
+    () =>
+      colorScheme === 'dark'
+        ? { ...MD3DarkTheme, colors: theme.dark }
+        : { ...MD3LightTheme, colors: theme.light },
+    [colorScheme, theme]
+  );
+
+  return (
+    <PaperProvider theme={paperTheme}>
+      <Appbar.Header>
+        <Appbar.Content title="My App" />
+      </Appbar.Header>
+      
+      <ScrollView>
+        <Card style={{ margin: 16 }}>
+          <Card.Content>
+            <Text variant="titleLarge">Welcome</Text>
+            <Text variant="bodyMedium">
+              This app uses Material 3 dynamic theming!
+            </Text>
+          </Card.Content>
+          <Card.Actions>
+            <Button>Cancel</Button>
+            <Button mode="contained">OK</Button>
+          </Card.Actions>
+        </Card>
+      </ScrollView>
+    </PaperProvider>
+  );
+}
+
+export default App;
+```

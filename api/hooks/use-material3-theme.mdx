@@ -1,0 +1,312 @@
+---
+title: "useMaterial3Theme"
+description: "Hook to manage Material 3 themes in your React Native app with dynamic color support"
+---
+
+## Overview
+
+`useMaterial3Theme` is a React hook that manages Material 3 themes in your application. It returns either the system theme (on Android 12+ devices) or a fallback theme, along with functions to dynamically update and reset the theme.
+
+## Function Signature
+
+```typescript
+function useMaterial3Theme(
+  options?: UseMaterial3ThemeOptions
+): {
+  theme: Material3Theme;
+  updateTheme: (sourceColor: string, options?: Material3ThemeOptions) => void;
+  resetTheme: () => void;
+}
+```
+
+## Parameters
+
+<ParamField path="options" type="UseMaterial3ThemeOptions" optional>
+  Configuration options for the hook
+
+  <Expandable title="properties">
+    <ParamField path="sourceColor" type="string" optional>
+      Source color for the theme in hex format (e.g., `#6750A4`). If provided, it will override the system theme and generate a custom theme based on this color.
+
+      ```typescript
+      const { theme } = useMaterial3Theme({ sourceColor: '#3E8260' });
+      ```
+    </ParamField>
+
+    <ParamField path="fallbackSourceColor" type="string" default="#6750A4" optional>
+      Source color for the fallback theme in hex format. This color is used when:
+      - The device doesn't support dynamic theming (Android < 12)
+      - The system theme cannot be retrieved
+      - The theme is reset using `resetTheme()`
+
+      ```typescript
+      const { theme } = useMaterial3Theme({ 
+        fallbackSourceColor: '#3E8260' 
+      });
+      ```
+    </ParamField>
+
+    <ParamField path="colorFidelity" type="boolean" default={false} optional>
+      Enable color fidelity to make scheme colors better match the source color. When enabled, the generated theme colors will more closely align with your specified `sourceColor` or `fallbackSourceColor`.
+
+      Learn more about [color fidelity in Material 3](https://m3.material.io/styles/color/advanced/adjust-existing-colors#cb49eeb4-3bbd-4521-9612-0856c27f91ef).
+
+      ```typescript
+      const { theme } = useMaterial3Theme({ 
+        sourceColor: '#3E8260',
+        colorFidelity: true 
+      });
+      ```
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Returns
+
+<ResponseField name="theme" type="Material3Theme">
+  The current Material 3 theme object containing light and dark color schemes.
+  
+  - Returns the **system theme** (on Android 12+) if `sourceColor` is not provided
+  - Returns a **fallback theme** (based on `fallbackSourceColor`) if system theme is unavailable
+  - Returns a **custom theme** (based on `sourceColor`) if `sourceColor` is provided
+
+  <Expandable title="Material3Theme structure">
+    ```typescript
+    {
+      light: Material3Scheme;
+      dark: Material3Scheme;
+    }
+    ```
+    
+    Each `Material3Scheme` contains 50+ color tokens including:
+    - Primary, secondary, and tertiary colors
+    - Surface and background colors
+    - Error colors
+    - Elevation levels
+    - Container variants
+    
+    See [Material3Theme type](/api/types/material3-theme) for complete structure.
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="updateTheme" type="function">
+  Function to update the theme by generating a new theme based on a source color.
+
+  **Signature:**
+  ```typescript
+  (sourceColor: string, options?: Material3ThemeOptions) => void
+  ```
+
+  **Parameters:**
+  - `sourceColor` (string, required): Hex color to generate the new theme from
+  - `options` (Material3ThemeOptions, optional):
+    - `colorFidelity` (boolean): Apply color fidelity to the generated theme
+
+  <Note>
+    This function only updates the theme state within your app. It does **not** change the system-level theme on the device.
+  </Note>
+
+  ```typescript
+  const { updateTheme } = useMaterial3Theme();
+  
+  // Update theme with a new color
+  updateTheme('#FF5722');
+  
+  // Update theme with color fidelity enabled
+  updateTheme('#FF5722', { colorFidelity: true });
+  ```
+</ResponseField>
+
+<ResponseField name="resetTheme" type="function">
+  Function to reset the theme to the default state (system theme or fallback theme).
+
+  **Signature:**
+  ```typescript
+  () => void
+  ```
+
+  When called, it resets the theme to:
+  - The **system theme** (if available on Android 12+)
+  - The **fallback theme** (based on `fallbackSourceColor` if system theme unavailable)
+
+  <Note>
+    This function only resets the theme state within your app. It does **not** affect the system-level theme on the device.
+  </Note>
+
+  ```typescript
+  const { resetTheme } = useMaterial3Theme();
+  
+  // Reset to default theme
+  resetTheme();
+  ```
+</ResponseField>
+
+## Examples
+
+### Basic Usage
+
+Retrieve the system theme or fallback theme with default settings:
+
+```typescript
+import { useMaterial3Theme } from 'expo-material3-theme';
+
+function App() {
+  const { theme } = useMaterial3Theme();
+
+  return (
+    <View style={{ backgroundColor: theme.light.background }}>
+      <Text style={{ color: theme.light.onBackground }}>
+        Hello Material 3!
+      </Text>
+    </View>
+  );
+}
+```
+
+### Custom Fallback Color
+
+Specify a custom fallback color for devices that don't support dynamic theming:
+
+```typescript
+const { theme } = useMaterial3Theme({ 
+  fallbackSourceColor: '#3E8260' 
+});
+```
+
+### Override with Custom Source Color
+
+Generate a custom theme regardless of system theme support:
+
+```typescript
+const { theme } = useMaterial3Theme({ 
+  sourceColor: '#3E8260' 
+});
+```
+
+### Enable Color Fidelity
+
+Generate a theme with enhanced color fidelity:
+
+```typescript
+const { theme } = useMaterial3Theme({
+  sourceColor: '#3E8260',
+  fallbackSourceColor: '#6750A4',
+  colorFidelity: true
+});
+```
+
+### Dynamic Theme Updates
+
+Allow users to change the theme color dynamically:
+
+```typescript
+import { useState } from 'react';
+import { useMaterial3Theme } from 'expo-material3-theme';
+
+function ThemeCustomizer() {
+  const { theme, updateTheme, resetTheme } = useMaterial3Theme();
+  const [selectedColor, setSelectedColor] = useState('#6750A4');
+
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    updateTheme(color, { colorFidelity: true });
+  };
+
+  return (
+    <View>
+      <ColorPicker 
+        onColorSelect={handleColorChange} 
+        selectedColor={selectedColor}
+      />
+      <Button title="Reset to System Theme" onPress={resetTheme} />
+    </View>
+  );
+}
+```
+
+### Integration with React Native Paper
+
+Use with React Native Paper's theming system:
+
+```typescript
+import { useMaterial3Theme } from 'expo-material3-theme';
+import { MD3DarkTheme, MD3LightTheme, PaperProvider } from 'react-native-paper';
+import { useColorScheme } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme();
+
+  const paperTheme = colorScheme === 'dark' 
+    ? { ...MD3DarkTheme, colors: theme.dark }
+    : { ...MD3LightTheme, colors: theme.light };
+
+  return (
+    <PaperProvider theme={paperTheme}>
+      {/* Your app content */}
+    </PaperProvider>
+  );
+}
+```
+
+## Type Definitions
+
+### UseMaterial3ThemeOptions
+
+```typescript
+interface UseMaterial3ThemeOptions extends Material3ThemeOptions {
+  /**
+   * Source color for the theme.
+   * If provided, it will overwrite the system theme.
+   */
+  sourceColor?: string;
+  
+  /**
+   * Source color for the fallback theme.
+   * @default '#6750A4'
+   */
+  fallbackSourceColor?: string;
+  
+  /**
+   * Enable color fidelity for the theme.
+   * @default false
+   */
+  colorFidelity?: boolean;
+}
+```
+
+### Material3ThemeOptions
+
+```typescript
+interface Material3ThemeOptions {
+  /**
+   * Enable color fidelity for the theme.
+   * @default false
+   */
+  colorFidelity?: boolean;
+}
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="getMaterial3Theme" icon="palette" href="/api/functions/get-material3-theme">
+    Get the system theme synchronously
+  </Card>
+  <Card title="getMaterial3ThemeAsync" icon="clock" href="/api/functions/get-material3-theme-async">
+    Get the system theme asynchronously
+  </Card>
+  <Card title="createMaterial3Theme" icon="paintbrush" href="/api/functions/create-material3-theme">
+    Create a custom theme from a source color
+  </Card>
+  <Card title="Material3Theme Type" icon="code" href="/api/types/material3-theme">
+    View the complete theme type structure
+  </Card>
+</CardGroup>
+
+## Notes
+
+- **System theme** is only available on Android 12+ devices (API level 31+)
+- On unsupported devices, the hook automatically falls back to generating a theme from `fallbackSourceColor`
+- The `updateTheme` and `resetTheme` functions only affect the app-level theme state, not the system theme
+- Check [isDynamicThemeSupported](/api/constants/is-dynamic-theme-supported) to determine if dynamic theming is available

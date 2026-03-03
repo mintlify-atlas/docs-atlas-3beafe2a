@@ -1,0 +1,75 @@
+---
+title: isDynamicThemeSupported
+description: Boolean constant that indicates if the device supports Material 3 dynamic theming from Android 12+
+---
+
+## Overview
+
+`isDynamicThemeSupported` is a boolean constant that indicates whether the current device supports [Material 3 dynamic theming](https://developer.android.com/develop/ui/views/theming/dynamic-colors).
+
+## When it returns true
+
+The constant returns `true` when **all** of the following conditions are met:
+
+- The platform is Android
+- The Android version is 12 or higher (API level 31+)
+- The native module is available
+
+On iOS or Android versions below 12, it will return `false`.
+
+## Implementation
+
+Here's the actual implementation from the source code:
+
+```typescript
+export const isDynamicThemeSupported =
+  !!ExpoMaterial3ThemeModule && Platform.OS === 'android' && Platform.Version >= 31;
+```
+
+The constant checks:
+1. `!!ExpoMaterial3ThemeModule` - Ensures the native module is available
+2. `Platform.OS === 'android'` - Verifies the platform is Android
+3. `Platform.Version >= 31` - Confirms Android version is 12+ (API level 31+)
+
+## Usage Example
+
+Use this constant to conditionally enable features or display UI based on dynamic theme support:
+
+```typescript
+import { isDynamicThemeSupported, getMaterial3Theme } from 'expo-material3-theme';
+
+function MyApp() {
+  if (isDynamicThemeSupported) {
+    console.log('Device supports dynamic theming');
+    // Use system theme colors
+    const theme = getMaterial3Theme();
+  } else {
+    console.log('Using fallback theme');
+    // Use custom source color
+    const theme = getMaterial3Theme('#6750A4');
+  }
+}
+```
+
+## Common Use Cases
+
+**Display a message to users:**
+
+```typescript
+import { isDynamicThemeSupported } from 'expo-material3-theme';
+
+if (!isDynamicThemeSupported) {
+  console.log('Dynamic theming is not available on this device');
+}
+```
+
+**Conditional feature availability:**
+
+```typescript
+import { isDynamicThemeSupported } from 'expo-material3-theme';
+
+const features = {
+  dynamicColors: isDynamicThemeSupported,
+  customThemes: true,
+};
+```

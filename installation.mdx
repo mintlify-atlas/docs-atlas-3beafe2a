@@ -1,0 +1,98 @@
+---
+title: Installation
+description: Install expo-material3-theme in your Expo or React Native project
+---
+
+## Installation in Managed Expo Projects
+
+<Steps>
+  <Step title="Install the package">
+    Install the library using the Expo CLI:
+    
+    <CodeGroup>
+    ```bash npm
+    npx expo install @pchmn/expo-material3-theme
+    ```
+    
+    ```bash yarn
+    yarn expo install @pchmn/expo-material3-theme
+    ```
+    
+    ```bash pnpm
+    pnpm expo install @pchmn/expo-material3-theme
+    ```
+    </CodeGroup>
+  </Step>
+  
+  <Step title="Understand Expo Go limitations">
+    <Info>
+      This library works with Expo Go, but you won't be able to retrieve the system theme (you'll get a fallback theme) because it requires custom native code and Expo Go [doesn't support it](https://docs.expo.dev/workflow/customizing/).
+      
+      To use the full dynamic theme functionality, you need to create a development build.
+    </Info>
+  </Step>
+  
+  <Step title="Rebuild development client (if using development builds)">
+    If you use development builds, you'll have to rebuild the development client for Android after adding the library because it contains native code:
+    
+    <CodeGroup>
+    ```bash Prebuild
+    npx expo prebuild --platform android
+    ```
+    
+    ```bash Run on Android
+    npx expo run:android
+    ```
+    </CodeGroup>
+    
+    <Note>
+      You only need to rebuild for Android. iOS doesn't have dynamic theme support, so no rebuild is necessary.
+      
+      See [Expo's development build documentation](https://docs.expo.dev/develop/development-builds/use-development-builds/#rebuild-a-development-build) for more details.
+    </Note>
+  </Step>
+</Steps>
+
+## Installation in Bare React Native Projects
+
+<Steps>
+  <Step title="Ensure Expo modules are configured">
+    For bare React Native projects, you must ensure that you have [installed and configured the `expo` package](https://docs.expo.dev/bare/installing-expo-modules/) before continuing.
+  </Step>
+  
+  <Step title="Install the package">
+    Install the library:
+    
+    <CodeGroup>
+    ```bash npm
+    npx expo install @pchmn/expo-material3-theme
+    ```
+    
+    ```bash yarn
+    yarn expo install @pchmn/expo-material3-theme
+    ```
+    
+    ```bash pnpm
+    pnpm expo install @pchmn/expo-material3-theme
+    ```
+    </CodeGroup>
+  </Step>
+  
+  <Step title="Install iOS dependencies">
+    Install the iOS native dependencies:
+    
+    ```bash
+    npx pod-install
+    ```
+    
+    <Note>
+      Even though iOS doesn't support dynamic themes, you still need to install the pods to avoid build errors.
+    </Note>
+  </Step>
+</Steps>
+
+## Next Steps
+
+<Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+  Learn how to use the library in your app
+</Card>

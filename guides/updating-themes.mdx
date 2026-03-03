@@ -1,0 +1,371 @@
+---
+title: Updating Themes Dynamically
+description: Learn how to change themes at runtime using updateTheme and resetTheme functions
+---
+
+## Overview
+
+The `useMaterial3Theme` hook provides two functions for changing themes dynamically:
+
+- **`updateTheme(sourceColor)`** - Generate and apply a new theme from a source color
+- **`resetTheme()`** - Reset to the default theme (system theme or fallback)
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme, updateTheme, resetTheme } = useMaterial3Theme();
+
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      {/* Update theme by generating a new one based on #3E8260 color */}
+      <Button onPress={() => updateTheme('#3E8260')}>Update theme</Button>
+      {/* Reset theme to default (system or fallback) */}
+      <Button onPress={() => resetTheme()}>Reset theme</Button>
+    </View>
+  );
+}
+```
+
+<Note>
+  `updateTheme()` and `resetTheme()` change the theme returned by `useMaterial3Theme()`. They do **not** change the system-level theme on Android.
+</Note>
+
+## Using updateTheme
+
+The `updateTheme` function generates a new Material 3 theme from any color:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { View, Button } from 'react-native';
+
+function ThemeSelector() {
+  const { updateTheme } = useMaterial3Theme();
+
+  return (
+    <View>
+      <Button 
+        onPress={() => updateTheme('#FF5722')} 
+        title="Red Theme" 
+      />
+      <Button 
+        onPress={() => updateTheme('#4CAF50')} 
+        title="Green Theme" 
+      />
+      <Button 
+        onPress={() => updateTheme('#2196F3')} 
+        title="Blue Theme" 
+      />
+    </View>
+  );
+}
+```
+
+### With Theme Options
+
+You can pass additional options to `updateTheme`:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+
+function App() {
+  const { updateTheme } = useMaterial3Theme();
+
+  const applyBrandTheme = () => {
+    updateTheme('#3E8260', { 
+      colorFidelity: true // Preserve exact hue
+    });
+  };
+
+  return (
+    <Button onPress={applyBrandTheme}>Apply Brand Theme</Button>
+  );
+}
+```
+
+## Using resetTheme
+
+The `resetTheme` function reverts to the original theme:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+
+function App() {
+  const { resetTheme } = useMaterial3Theme();
+
+  return (
+    <Button onPress={() => resetTheme()}>
+      Reset to Default
+    </Button>
+  );
+}
+```
+
+What "default" means depends on your configuration:
+
+<Tabs>
+  <Tab title="System Theme">
+    ```tsx
+    // Will reset to Android 12+ system theme
+    // or fallback color (#6750A4)
+    const { resetTheme } = useMaterial3Theme();
+    ```
+  </Tab>
+  <Tab title="Custom Fallback">
+    ```tsx
+    // Will reset to Android 12+ system theme
+    // or fallback to #3E8260 theme
+    const { resetTheme } = useMaterial3Theme({ 
+      fallbackSourceColor: '#3E8260' 
+    });
+    ```
+  </Tab>
+  <Tab title="Custom Source">
+    ```tsx
+    // Will reset to #3E8260 theme on all devices
+    const { resetTheme } = useMaterial3Theme({ 
+      sourceColor: '#3E8260' 
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Theme Updates Don't Affect System
+
+It's important to understand that `updateTheme()` and `resetTheme()` only affect your app's theme, not the system theme:
+
+```tsx
+function Example() {
+  const { updateTheme } = useMaterial3Theme();
+
+  const handleUpdateTheme = () => {
+    // This changes the theme in YOUR APP only
+    updateTheme('#FF5722');
+    
+    // The Android system theme remains unchanged
+    // The user's wallpaper-based theme is not affected
+  };
+
+  return <Button onPress={handleUpdateTheme}>Change App Theme</Button>;
+}
+```
+
+On Android 12+ devices:
+- The system may still provide a dynamic theme from the wallpaper
+- Calling `updateTheme()` overrides that system theme in your app
+- The system-level theme remains unchanged
+- Other apps are not affected
+
+## Example: Theme Customization Screen
+
+Here's a complete example of a theme customization UI:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+
+const THEME_PRESETS = [
+  { name: 'Purple', color: '#6750A4' },
+  { name: 'Green', color: '#3E8260' },
+  { name: 'Red', color: '#FF5722' },
+  { name: 'Blue', color: '#2196F3' },
+  { name: 'Orange', color: '#FF9800' },
+];
+
+function ThemeCustomizer() {
+  const colorScheme = useColorScheme();
+  const { theme, updateTheme, resetTheme } = useMaterial3Theme();
+  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const colors = theme[colorScheme];
+
+  const handleThemeSelect = (color: string, name: string) => {
+    updateTheme(color);
+    setSelectedTheme(name);
+  };
+
+  const handleReset = () => {
+    resetTheme();
+    setSelectedTheme(null);
+  };
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.onBackground }]}>
+        Choose Your Theme
+      </Text>
+
+      <View style={styles.presetGrid}>
+        {THEME_PRESETS.map((preset) => (
+          <TouchableOpacity
+            key={preset.name}
+            style={[
+              styles.presetButton,
+              { backgroundColor: preset.color },
+              selectedTheme === preset.name && styles.selectedPreset,
+            ]}
+            onPress={() => handleThemeSelect(preset.color, preset.name)}
+          >
+            <Text style={styles.presetName}>{preset.name}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <TouchableOpacity
+        style={[
+          styles.resetButton,
+          { 
+            backgroundColor: colors.secondaryContainer,
+            borderColor: colors.outline,
+          },
+        ]}
+        onPress={handleReset}
+      >
+        <Text style={{ color: colors.onSecondaryContainer }}>
+          Reset to System Theme
+        </Text>
+      </TouchableOpacity>
+
+      {selectedTheme && (
+        <Text style={[styles.status, { color: colors.onSurfaceVariant }]}>
+          Current theme: {selectedTheme}
+        </Text>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 24,
+  },
+  presetGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 24,
+  },
+  presetButton: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  selectedPreset: {
+    borderWidth: 4,
+    borderColor: '#fff',
+  },
+  presetName: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  resetButton: {
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  status: {
+    marginTop: 16,
+    textAlign: 'center',
+    fontSize: 14,
+  },
+});
+
+export default ThemeCustomizer;
+```
+
+## Persisting Theme Selection
+
+To remember the user's theme choice across app restarts, combine with AsyncStorage:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect } from 'react';
+
+const THEME_STORAGE_KEY = '@app_theme_color';
+
+function App() {
+  const { updateTheme, resetTheme } = useMaterial3Theme();
+
+  // Load saved theme on mount
+  useEffect(() => {
+    AsyncStorage.getItem(THEME_STORAGE_KEY)
+      .then((color) => {
+        if (color) {
+          updateTheme(color);
+        }
+      });
+  }, []);
+
+  const handleThemeChange = async (color: string) => {
+    updateTheme(color);
+    await AsyncStorage.setItem(THEME_STORAGE_KEY, color);
+  };
+
+  const handleReset = async () => {
+    resetTheme();
+    await AsyncStorage.removeItem(THEME_STORAGE_KEY);
+  };
+
+  return (
+    <View>
+      <Button onPress={() => handleThemeChange('#3E8260')}>
+        Green Theme
+      </Button>
+      <Button onPress={handleReset}>
+        Reset Theme
+      </Button>
+    </View>
+  );
+}
+```
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Theme Customization">
+    Let users choose their preferred color theme
+  </Card>
+  <Card title="Brand Theming">
+    Switch between different brand themes in multi-tenant apps
+  </Card>
+  <Card title="Contextual Themes">
+    Apply different themes for different app sections or modes
+  </Card>
+  <Card title="A/B Testing">
+    Test different color schemes with different user groups
+  </Card>
+</CardGroup>
+
+## Performance Considerations
+
+Theme updates trigger a re-render of all components using the theme. Keep this in mind:
+
+```tsx
+// Good: Update once after user selection
+const handleConfirm = () => {
+  updateTheme(selectedColor);
+};
+
+// Avoid: Updating on every slider change
+const handleSliderChange = (color) => {
+  updateTheme(color); // This will cause many re-renders
+};
+
+// Better: Update only on release
+const handleSliderComplete = (color) => {
+  updateTheme(color);
+};
+```

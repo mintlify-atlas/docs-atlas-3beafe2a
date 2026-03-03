@@ -1,0 +1,76 @@
+---
+title: Material 3 Theming
+description: Understanding Material 3 and dynamic color in your React Native app
+---
+
+## What is Material 3?
+
+Material 3 (also known as Material You) is Google's latest design system that introduces **personalization** as a core principle. Unlike previous Material Design versions, Material 3 creates unique color schemes derived from user preferences, wallpapers, and system settings.
+
+<Info>
+  Material 3 brings color personalization to Android apps, allowing your app's theme to automatically adapt to each user's device preferences.
+</Info>
+
+Key features of Material 3:
+- **Dynamic color**: Colors generated from the user's wallpaper or preferences
+- **Expressive surfaces**: Enhanced elevation and surface styling
+- **Adaptive components**: UI elements that respond to context
+- **Accessible by default**: Built-in accessibility features
+
+## How Dynamic Color Works
+
+Dynamic color is available on **Android 12 (API level 31) and higher**. The system extracts a color palette from the user's wallpaper and applies it consistently across all apps that support Material 3.
+
+<Info>
+  When users change their wallpaper, the system automatically generates a new color scheme. Apps using `expo-material3-theme` will receive these updated colors.
+</Info>
+
+### The Color Extraction Process
+
+1. **Source extraction**: Android analyzes the user's wallpaper to identify prominent colors
+2. **Palette generation**: The system creates a complete color palette using Material Design's color algorithms
+3. **Theme distribution**: Apps can access these colors through the system API
+4. **Automatic updates**: When wallpaper changes, themes update automatically
+
+### Platform Support
+
+Dynamic color support varies by platform:
+
+| Platform | Dynamic Color Support | Fallback Behavior |
+|----------|----------------------|-------------------|
+| Android 12+ | ✅ Full support | N/A |
+| Android 11 and below | ❌ Not supported | Uses custom theme from source color |
+| iOS | ❌ Not supported | Uses custom theme from source color |
+
+You can check for dynamic theme support in your code:
+
+```tsx
+import { isDynamicThemeSupported } from '@pchmn/expo-material3-theme';
+
+if (isDynamicThemeSupported) {
+  // Android 12+: System theme is available
+} else {
+  // Fallback to custom theme
+}
+```
+
+See [index.ts:12](https://github.com/pchmn/expo-material3-theme/blob/main/src/index.ts#L12) for the implementation.
+
+## Material 3 Resources
+
+To learn more about Material 3 design principles and implementation:
+
+- [Material Design 3 Official Documentation](https://m3.material.io/)
+- [Material 3 Color System](https://m3.material.io/styles/color/overview)
+- [Dynamic Color on Android](https://developer.android.com/develop/ui/views/theming/dynamic-colors)
+- [Material Color Utilities](https://github.com/material-foundation/material-color-utilities)
+
+<Info>
+  The `expo-material3-theme` library uses Google's official `@material/material-color-utilities` package to generate themes, ensuring your custom themes follow Material 3 specifications.
+</Info>
+
+## Next Steps
+
+- Learn about [Dynamic vs Custom Themes](/concepts/dynamic-vs-custom)
+- Explore the [Theme Structure](/concepts/theme-structure)
+- Start with the [Quick Start Guide](/quickstart)

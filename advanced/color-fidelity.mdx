@@ -1,0 +1,97 @@
+---
+title: Color Fidelity
+description: Learn how to use color fidelity to preserve your brand colors in Material 3 themes
+---
+
+## What is Color Fidelity?
+
+Color fidelity is a Material 3 feature that allows you to maintain closer adherence to your source color when generating a theme. By default, Material 3's theme generation algorithm adjusts colors to ensure proper contrast and accessibility, which can sometimes result in colors that differ significantly from your brand color.
+
+With color fidelity enabled, the theme generator uses a different algorithm that keeps the generated colors closer to your source color while still maintaining Material Design principles.
+
+For more details, see the [Material 3 documentation on adjusting existing colors](https://m3.material.io/styles/color/advanced/adjust-existing-colors#cb49eeb4-3bbd-4521-9612-0856c27f91ef).
+
+## Using the colorFidelity Option
+
+The `colorFidelity` option is available in the `Material3ThemeOptions` interface. You can enable it when using `useMaterial3Theme`, `getMaterial3Theme`, or `createMaterial3Theme`.
+
+### Type Definition
+
+From `src/utils/createMaterial3Theme.ts:33-41`:
+
+```typescript
+export interface Material3ThemeOptions {
+  /**
+   * Enable color fidelity for the theme.
+   *
+   * https://m3.material.io/styles/color/advanced/adjust-existing-colors#cb49eeb4-3bbd-4521-9612-0856c27f91ef
+   * @default false
+   * */
+  colorFidelity?: boolean;
+}
+```
+
+## Examples
+
+### Basic Usage with useMaterial3Theme
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme({ 
+    sourceColor: '#3E8260', 
+    colorFidelity: true 
+  });
+
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      <Button color={theme[colorScheme].primary}>Themed button</Button>
+    </View>
+  );
+}
+```
+
+### With getMaterial3Theme
+
+```tsx
+import { getMaterial3Theme } from '@pchmn/expo-material3-theme';
+
+const theme = getMaterial3Theme('#3E8260', { colorFidelity: true });
+```
+
+### With createMaterial3Theme
+
+```tsx
+import { createMaterial3Theme } from '@pchmn/expo-material3-theme';
+
+const theme = createMaterial3Theme('#3E8260', { colorFidelity: true });
+```
+
+## When to Use Color Fidelity
+
+<Tip>
+Use color fidelity when you need to maintain brand consistency and your brand color is a core part of your app's identity.
+</Tip>
+
+### Use Color Fidelity When:
+
+- **Brand consistency is critical** - Your app has strict brand guidelines that require specific colors
+- **Recognizable brand colors** - Your brand color is well-known and important for user recognition
+- **Custom color schemes** - You're implementing a custom theme picker where users expect their chosen color to be visible
+
+### Use Default Theme Generation When:
+
+- **Accessibility is the priority** - You want to ensure maximum contrast and readability
+- **Following Material Design strictly** - You prefer the standard Material 3 color harmonization
+- **Using system themes** - When retrieving the device's dynamic theme on Android 12+
+
+<Note>
+Color fidelity is set to `false` by default. The standard theme generation provides better accessibility and follows Material Design guidelines more closely.
+</Note>
+
+<Warning>
+Even with color fidelity enabled, colors may still be adjusted to meet minimum contrast requirements for accessibility. Always test your themes for readability.
+</Warning>

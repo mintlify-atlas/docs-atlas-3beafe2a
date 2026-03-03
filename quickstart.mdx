@@ -1,80 +1,142 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get started with expo-material3-theme in minutes
 ---
 
-## Get started in three steps
+## Basic Usage
 
-Get your documentation site running locally and make your first customization.
+The simplest way to use expo-material3-theme is with the `useMaterial3Theme` hook. This hook retrieves the Material 3 theme from the user's device (or a fallback theme if not supported).
 
-### Step 1: Set up your local environment
+### Retrieve System Theme
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
 
-### Step 2: Deploy your changes
+function App() {
+  const colorScheme = useColorScheme();
+  // If the device is not compatible, it will return a theme based on the fallback source color
+  const { theme } = useMaterial3Theme({ fallbackSourceColor: '#3E8260' });
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      <Button color={theme[colorScheme].primary}>Themed button</Button>
+    </View>
+  );
+}
+```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+<Info>
+  The `theme` object contains both `light` and `dark` variants. Use React Native's `useColorScheme()` hook to determine which one to apply.
+</Info>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+### Use a Custom Theme
 
-### Step 3: Go live
+If you want to use a theme based on a specific color instead of the system theme, pass the `sourceColor` parameter:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
 
-## Next steps
+function App() {
+  const colorScheme = useColorScheme();
+  // Theme returned will be based on #3E8260 color
+  const { theme } = useMaterial3Theme({ sourceColor: '#3E8260' });
 
-Now that you have your docs running, explore these key features:
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      <Button color={theme[colorScheme].primary}>Themed button</Button>
+    </View>
+  );
+}
+```
 
-<CardGroup cols={2}>
+### Dynamic Theme Updates
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+You can allow users to customize the theme at runtime using `updateTheme` and `resetTheme`:
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme, updateTheme, resetTheme } = useMaterial3Theme();
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      {/* Update theme by generating a new one based on #3E8260 color */}
+      <Button onPress={() => updateTheme('#3E8260')}>Update theme</Button>
+      {/* Reset theme to default (system or fallback) */}
+      <Button onPress={() => resetTheme()}>Reset theme</Button>
+    </View>
+  );
+}
+```
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  `updateTheme()` and `resetTheme()` will change the theme returned by `useMaterial3Theme()`, but they will not change the theme at the system level.
 </Note>
+
+## Usage with react-native-paper
+
+The library provides a theme compatible with `react-native-paper`, making it easy to combine both libraries:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useMemo } from 'react';
+import { useColorScheme } from 'react-native';
+import { Button, MD3DarkTheme, MD3LightTheme, Provider as PaperProvider } from 'react-native-paper';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme();
+
+  const paperTheme = useMemo(
+    () =>
+      colorScheme === 'dark' ? { ...MD3DarkTheme, colors: theme.dark } : { ...MD3LightTheme, colors: theme.light },
+    [colorScheme, theme]
+  );
+
+  return (
+    <PaperProvider theme={paperTheme}>
+      <Button>Themed react native paper button</Button>
+    </PaperProvider>
+  );
+}
+```
+
+## Color Fidelity
+
+You can apply color fidelity to make scheme colors better match your source color:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme({ sourceColor: '#3E8260', colorFidelity: true });
+
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      <Button color={theme[colorScheme].primary}>Themed button</Button>
+    </View>
+  );
+}
+```
+
+<Info>
+  Learn more about color fidelity in the [Material 3 color documentation](https://m3.material.io/styles/color/advanced/adjust-existing-colors#cb49eeb4-3bbd-4521-9612-0856c27f91ef).
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/api/hooks/use-material3-theme">
+    Explore all available functions and hooks
+  </Card>
+  <Card title="react-native-paper Integration" icon="book" href="/guides/react-native-paper">
+    Learn advanced integration patterns with react-native-paper
+  </Card>
+</CardGroup>

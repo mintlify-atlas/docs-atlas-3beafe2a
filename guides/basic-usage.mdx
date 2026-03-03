@@ -1,0 +1,166 @@
+---
+title: Basic Usage
+description: Learn the fundamental patterns for using expo-material3-theme in your React Native app
+---
+
+## Using the Hook
+
+The `useMaterial3Theme` hook is the primary way to access Material 3 themes in your app. It automatically retrieves the system theme on Android 12+ devices or returns a fallback theme for older versions and iOS.
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Button } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  // If the device is not compatible, it will return a theme based on the fallback source color (optional, default to #6750A4)
+  const { theme } = useMaterial3Theme({ fallbackSourceColor: '#3E8260' });
+
+  return (
+    <View style={{ backgroundColor: theme[colorScheme].background }}>
+      <Button color={theme[colorScheme].primary}>Themed button</Button>
+    </View>
+  );
+}
+```
+
+## Accessing Theme Colors
+
+The `theme` object returned by `useMaterial3Theme` contains both `light` and `dark` color schemes. Access the appropriate scheme using React Native's `useColorScheme` hook:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Text } from 'react-native';
+
+function ThemedComponent() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme();
+  const colors = theme[colorScheme];
+
+  return (
+    <View style={{ backgroundColor: colors.surface }}>
+      <Text style={{ color: colors.onSurface }}>Hello World</Text>
+      <View style={{ backgroundColor: colors.primaryContainer }}>
+        <Text style={{ color: colors.onPrimaryContainer }}>Primary Container</Text>
+      </View>
+    </View>
+  );
+}
+```
+
+## Handling Light/Dark Mode
+
+Use React Native's `useColorScheme` hook to respond to system theme changes:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useColorScheme, View, Text, StyleSheet } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme();
+  
+  // Get the current color scheme (light or dark)
+  const isDark = colorScheme === 'dark';
+  const colors = theme[colorScheme];
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={{ color: colors.onBackground }}>
+        Current mode: {isDark ? 'Dark' : 'Light'}
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+});
+```
+
+## Common Color Patterns
+
+### Surface and Background Colors
+
+```tsx
+const colors = theme[colorScheme];
+
+// Main background
+<View style={{ backgroundColor: colors.background }} />
+
+// Surface (cards, sheets)
+<View style={{ backgroundColor: colors.surface }} />
+
+// Surface variants for different elevations
+<View style={{ backgroundColor: colors.surfaceContainer }} />
+<View style={{ backgroundColor: colors.surfaceContainerHigh }} />
+```
+
+### Primary, Secondary, and Tertiary Colors
+
+```tsx
+const colors = theme[colorScheme];
+
+// Primary actions
+<Button color={colors.primary} />
+<View style={{ backgroundColor: colors.primaryContainer }}>
+  <Text style={{ color: colors.onPrimaryContainer }}>Primary</Text>
+</View>
+
+// Secondary elements
+<View style={{ backgroundColor: colors.secondaryContainer }}>
+  <Text style={{ color: colors.onSecondaryContainer }}>Secondary</Text>
+</View>
+
+// Tertiary/accent elements
+<View style={{ backgroundColor: colors.tertiaryContainer }}>
+  <Text style={{ color: colors.onTertiaryContainer }}>Tertiary</Text>
+</View>
+```
+
+### Error and Status Colors
+
+```tsx
+const colors = theme[colorScheme];
+
+// Error states
+<View style={{ backgroundColor: colors.errorContainer }}>
+  <Text style={{ color: colors.onErrorContainer }}>Error message</Text>
+</View>
+
+// Outline and borders
+<View style={{ borderColor: colors.outline, borderWidth: 1 }} />
+<View style={{ borderColor: colors.outlineVariant, borderWidth: 1 }} />
+```
+
+## Fallback Source Color
+
+When the device doesn't support dynamic theming (iOS or Android < 12), you can specify a fallback source color:
+
+```tsx
+const { theme } = useMaterial3Theme({ 
+  fallbackSourceColor: '#3E8260' // Default is #6750A4
+});
+```
+
+<Note>
+  The fallback source color is only used when the device doesn't support Material 3 dynamic theming. On Android 12+ devices, the system theme will always be used unless you explicitly provide a `sourceColor` parameter.
+</Note>
+
+## Available Colors
+
+The Material 3 color scheme includes:
+
+- **Primary colors**: `primary`, `onPrimary`, `primaryContainer`, `onPrimaryContainer`
+- **Secondary colors**: `secondary`, `onSecondary`, `secondaryContainer`, `onSecondaryContainer`
+- **Tertiary colors**: `tertiary`, `onTertiary`, `tertiaryContainer`, `onTertiaryContainer`
+- **Error colors**: `error`, `onError`, `errorContainer`, `onErrorContainer`
+- **Surface colors**: `surface`, `onSurface`, `surfaceVariant`, `onSurfaceVariant`, `surfaceContainer`, `surfaceContainerLow`, `surfaceContainerLowest`, `surfaceContainerHigh`, `surfaceContainerHighest`, `surfaceBright`, `surfaceDim`, `surfaceTint`
+- **Background colors**: `background`, `onBackground`
+- **Outline colors**: `outline`, `outlineVariant`
+- **Inverse colors**: `inverseSurface`, `inverseOnSurface`, `inversePrimary`
+- **Other**: `shadow`, `scrim`, `backdrop`, `surfaceDisabled`, `onSurfaceDisabled`
+- **Elevation levels**: `elevation.level0` through `elevation.level5`

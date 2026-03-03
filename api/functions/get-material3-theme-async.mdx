@@ -1,0 +1,113 @@
+---
+title: getMaterial3ThemeAsync
+description: Asynchronously get the Material 3 theme from the system (Android 12+) or fallback theme
+---
+
+Asynchronous function that returns the theme retrieved from the user's device (works only on Android 12+). If the system does not support Material 3 dynamic theming, it will return a theme based on the fallback source color.
+
+This is an `AsyncFunction` whose native code is by default dispatched on a different thread than the JavaScript runtime runs on. This makes it suitable for operations that might block the JavaScript thread.
+
+## Function Signature
+
+```typescript
+async function getMaterial3ThemeAsync(
+  fallbackSourceColor?: string,
+  options?: Material3ThemeOptions
+): Promise<Material3Theme>
+```
+
+## When to Use
+
+### Use `getMaterial3ThemeAsync` when:
+- You want to avoid blocking the JavaScript thread during theme retrieval
+- You're initializing the theme in an async context (e.g., app startup)
+- You're using it with other async operations
+
+### Use `getMaterial3Theme` when:
+- You need the theme immediately and synchronously
+- You're using it in React components during render
+- Performance is not a concern
+
+## Parameters
+
+<ParamField path="fallbackSourceColor" type="string" default="#6750A4">
+  Source color for the fallback theme. This color is used to generate a Material 3 theme when the device does not support dynamic theming (Android versions below 12).
+</ParamField>
+
+<ParamField path="options" type="Material3ThemeOptions">
+  Optional configuration for theme generation.
+  
+  <Expandable title="properties">
+    <ParamField path="colorFidelity" type="boolean" default={false}>
+      Apply color fidelity to make scheme colors better match the `fallbackSourceColor` if used. When enabled, the generated theme colors will more closely align with the source color.
+      
+      Learn more about [color fidelity in Material 3](https://m3.material.io/styles/color/advanced/adjust-existing-colors#cb49eeb4-3bbd-4521-9612-0856c27f91ef).
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Return Type
+
+<ResponseField name="Promise<Material3Theme>" type="Promise<object>">
+  A Promise that resolves to an object containing both light and dark color schemes.
+  
+  <Expandable title="properties">
+    <ResponseField name="light" type="Material3Scheme">
+      Light color scheme with all Material 3 color tokens.
+    </ResponseField>
+    
+    <ResponseField name="dark" type="Material3Scheme">
+      Dark color scheme with all Material 3 color tokens.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## AsyncFunction Dispatch
+
+This function is implemented as an Expo `AsyncFunction`, which means its native code is dispatched on a different thread than the JavaScript runtime. This provides better performance characteristics for potentially expensive operations like retrieving system theme colors.
+
+Learn more about [AsyncFunctions in Expo](https://docs.expo.dev/modules/module-api/#asyncfunction).
+
+## Examples
+
+### Basic Usage
+
+Get the theme asynchronously without any parameters:
+
+```typescript
+const theme = await getMaterial3ThemeAsync();
+```
+
+### Custom Fallback Color
+
+Specify a custom fallback color:
+
+```typescript
+const theme = await getMaterial3ThemeAsync('#6750A4');
+```
+
+### With Color Fidelity
+
+Enable color fidelity for better source color matching:
+
+```typescript
+const theme = await getMaterial3ThemeAsync('#6750A4', { colorFidelity: true });
+```
+
+### In App Initialization
+
+Use in an async initialization function:
+
+```typescript
+async function initializeApp() {
+  const theme = await getMaterial3ThemeAsync('#3E8260');
+  // Use theme for initial app setup
+  return theme;
+}
+```
+
+## Related
+
+- [getMaterial3Theme](/api/functions/get-material3-theme) - Synchronous version of this function
+- [createMaterial3Theme](/api/functions/create-material3-theme) - Create theme from source color only
+- [useMaterial3Theme](/api/hooks/use-material3-theme) - React hook for theme management

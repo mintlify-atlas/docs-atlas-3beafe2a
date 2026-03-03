@@ -1,0 +1,321 @@
+---
+title: Theme Structure
+description: Understanding the Material3Theme object and color scheme properties
+---
+
+## Material3Theme Type
+
+The `Material3Theme` object contains complete color schemes for both light and dark modes:
+
+```typescript
+export type Material3Theme = {
+  light: Material3Scheme;
+  dark: Material3Scheme;
+};
+```
+
+Each theme provides a `Material3Scheme` object with all the colors needed to style your app according to Material 3 guidelines.
+
+## Material3Scheme Color Properties
+
+The `Material3Scheme` type extends `SystemScheme` with additional Material 3-specific colors and elevation levels:
+
+```typescript
+export type Material3Scheme = SystemScheme & {
+  // Error colors
+  error: string;
+  onError: string;
+  errorContainer: string;
+  onErrorContainer: string;
+
+  // Utility colors
+  shadow: string;
+  scrim: string;
+  surfaceDisabled: string;
+  onSurfaceDisabled: string;
+  backdrop: string;
+
+  // Surface variants
+  surfaceContainer: string;
+  surfaceContainerLow: string;
+  surfaceContainerLowest: string;
+  surfaceContainerHigh: string;
+  surfaceContainerHighest: string;
+  surfaceBright: string;
+  surfaceDim: string;
+  surfaceTint: string;
+
+  // Elevation system
+  elevation: {
+    level0: string;
+    level1: string;
+    level2: string;
+    level3: string;
+    level4: string;
+    level5: string;
+  };
+};
+```
+
+See [ExpoMaterial3Theme.types.ts:42-66](https://github.com/pchmn/expo-material3-theme/blob/main/src/ExpoMaterial3Theme.types.ts#L42-L66) for the source definition.
+
+### SystemScheme Colors
+
+The base `SystemScheme` provides the core Material 3 color roles:
+
+```typescript
+export type SystemScheme = {
+  // Primary colors
+  primary: string;
+  onPrimary: string;
+  primaryContainer: string;
+  onPrimaryContainer: string;
+
+  // Secondary colors
+  secondary: string;
+  onSecondary: string;
+  secondaryContainer: string;
+  onSecondaryContainer: string;
+
+  // Tertiary colors
+  tertiary: string;
+  onTertiary: string;
+  tertiaryContainer: string;
+  onTertiaryContainer: string;
+
+  // Background colors
+  background: string;
+  onBackground: string;
+
+  // Surface colors
+  surface: string;
+  onSurface: string;
+  surfaceVariant: string;
+  onSurfaceVariant: string;
+
+  // Outline colors
+  outline: string;
+  outlineVariant: string;
+
+  // Inverse colors
+  inverseSurface: string;
+  inverseOnSurface: string;
+  inversePrimary: string;
+};
+```
+
+See [ExpoMaterial3Theme.types.ts:10-40](https://github.com/pchmn/expo-material3-theme/blob/main/src/ExpoMaterial3Theme.types.ts#L10-L40) for the source definition.
+
+## Color Role Categories
+
+### Primary Colors
+Used for key components and high-emphasis actions:
+
+- `primary`: Main brand color
+- `onPrimary`: Text/icons on primary color
+- `primaryContainer`: Standout fill color for key components
+- `onPrimaryContainer`: Text/icons on primary container
+
+```tsx
+<View style={{ backgroundColor: theme.light.primaryContainer }}>
+  <Text style={{ color: theme.light.onPrimaryContainer }}>
+    Primary content
+  </Text>
+</View>
+```
+
+### Secondary & Tertiary Colors
+Provide additional accent colors for variety:
+
+- `secondary` / `tertiary`: Accent colors
+- `onSecondary` / `onTertiary`: Text/icons on accent colors
+- `secondaryContainer` / `tertiaryContainer`: Less prominent containers
+- `onSecondaryContainer` / `onTertiaryContainer`: Text/icons on containers
+
+### Surface Colors
+Used for backgrounds and surfaces:
+
+- `surface`: Default surface color
+- `onSurface`: Default text/icon color
+- `surfaceVariant`: Medium emphasis surface
+- `onSurfaceVariant`: Text/icons on surface variant
+- `surfaceContainer`: Default container color
+- `surfaceContainerLow/Lowest/High/Highest`: Container hierarchy
+- `surfaceBright` / `surfaceDim`: Surface lightness variants
+- `surfaceTint`: Color overlay for elevation
+
+<Info>
+  The various `surfaceContainer` variants provide a hierarchy system for layering UI elements. Use `surfaceContainerLowest` for the lowest layer and `surfaceContainerHighest` for the topmost layer.
+</Info>
+
+### Error Colors
+For error states and destructive actions:
+
+- `error`: Error color
+- `onError`: Text/icons on error color
+- `errorContainer`: Error container background
+- `onErrorContainer`: Text/icons on error container
+
+### Utility Colors
+Special-purpose colors:
+
+- `shadow`: Drop shadow color
+- `scrim`: Overlay for modals/dialogs
+- `backdrop`: Semi-transparent overlay
+- `surfaceDisabled`: Disabled surface color (with opacity)
+- `onSurfaceDisabled`: Disabled text/icon color (with opacity)
+
+### Outline Colors
+For borders and dividers:
+
+- `outline`: Default border color
+- `outlineVariant`: Subtle border color
+
+### Inverse Colors
+For surfaces with inverted contrast:
+
+- `inverseSurface`: Inverted surface color
+- `inverseOnSurface`: Text/icons on inverse surface
+- `inversePrimary`: Primary color for inverse surfaces
+
+## Elevation Levels
+
+Material 3 uses **tonal elevation** instead of shadows. Each elevation level is a surface color tinted with the primary color:
+
+```typescript
+elevation: {
+  level0: string;  // No elevation (transparent)
+  level1: string;  // 5% primary color mix
+  level2: string;  // 8% primary color mix
+  level3: string;  // 11% primary color mix
+  level4: string;  // 12% primary color mix
+  level5: string;  // 14% primary color mix
+}
+```
+
+Implementation from [createMaterial3Theme.ts:66-72](https://github.com/pchmn/expo-material3-theme/blob/main/src/utils/createMaterial3Theme.ts#L66-L72):
+
+```typescript
+const elevations = ['transparent', 0.05, 0.08, 0.11, 0.12, 0.14];
+
+const elevation = elevations.reduce(
+  (acc, value, index) => ({
+    ...acc,
+    [`level${index}`]: index === 0 
+      ? value 
+      : color(scheme.surface).mix(color(scheme.primary), Number(value)).hex(),
+  }),
+  {}
+);
+```
+
+### Using Elevation
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { View } from 'react-native';
+
+function Card() {
+  const { theme } = useMaterial3Theme();
+  
+  return (
+    <View style={{ 
+      backgroundColor: theme.light.elevation.level2,
+      padding: 16,
+      borderRadius: 12
+    }}>
+      {/* Card content */}
+    </View>
+  );
+}
+```
+
+<Info>
+  Higher elevation levels have more primary color mixed in, creating a visual hierarchy without shadows. This follows Material 3's tonal elevation system.
+</Info>
+
+## react-native-paper Compatibility
+
+The `Material3Scheme` type is compatible with `react-native-paper`'s `MD3Theme.colors`:
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
+import { useColorScheme } from 'react-native';
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme();
+
+  const paperTheme = colorScheme === 'dark'
+    ? { ...MD3DarkTheme, colors: theme.dark }
+    : { ...MD3LightTheme, colors: theme.light };
+
+  return (
+    <PaperProvider theme={paperTheme}>
+      {/* Your app */}
+    </PaperProvider>
+  );
+}
+```
+
+<Info>
+  Some colors in `Material3Scheme` are not present in `react-native-paper`'s default theme. You can create a typed `useAppTheme()` hook to access these additional colors. See the [react-native-paper integration guide](/guides/react-native-paper).
+</Info>
+
+## Example: Using Theme Colors
+
+```tsx
+import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
+
+function ThemedButton({ onPress, children }) {
+  const { theme } = useMaterial3Theme();
+  const colorScheme = useColorScheme();
+  const colors = theme[colorScheme];
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        backgroundColor: colors.primaryContainer,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 8,
+      }}
+    >
+      <Text style={{ color: colors.onPrimaryContainer, fontWeight: '600' }}>
+        {children}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+function ErrorAlert({ message }) {
+  const { theme } = useMaterial3Theme();
+  const colorScheme = useColorScheme();
+  const colors = theme[colorScheme];
+
+  return (
+    <View
+      style={{
+        backgroundColor: colors.errorContainer,
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.error,
+      }}
+    >
+      <Text style={{ color: colors.onErrorContainer }}>
+        {message}
+      </Text>
+    </View>
+  );
+}
+```
+
+## Next Steps
+
+- Learn about [Dynamic vs Custom Themes](/concepts/dynamic-vs-custom)
+- See [react-native-paper Integration](/guides/react-native-paper)
+- Explore the [API Reference](/api/hooks/use-material3-theme)

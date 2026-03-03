@@ -1,0 +1,284 @@
+---
+title: TypeScript Usage
+description: Learn how to use expo-material3-theme with TypeScript for full type safety
+---
+
+## Type Definitions
+
+The library provides comprehensive TypeScript support with exported type definitions for all themes and options.
+
+### Available Types
+
+From `src/ExpoMaterial3Theme.types.ts:10-71` and `src/index.ts:114`:
+
+```typescript
+import { 
+  Material3Scheme, 
+  Material3Theme, 
+  Material3ThemeOptions 
+} from '@pchmn/expo-material3-theme';
+```
+
+### Material3Scheme
+
+Represents a single color scheme (light or dark) with all Material 3 color tokens:
+
+```typescript
+export type Material3Scheme = SystemScheme & {
+  error: string;
+  onError: string;
+  errorContainer: string;
+  onErrorContainer: string;
+
+  shadow: string;
+  scrim: string;
+  surfaceDisabled: string;
+  onSurfaceDisabled: string;
+  backdrop: string;
+
+  surfaceContainer: string;
+  surfaceContainerLow: string;
+  surfaceContainerLowest: string;
+  surfaceContainerHigh: string;
+  surfaceContainerHighest: string;
+  surfaceBright: string;
+  surfaceDim: string;
+  surfaceTint: string;
+
+  elevation: {
+    level0: string;
+    level1: string;
+    level2: string;
+    level3: string;
+    level4: string;
+    level5: string;
+  };
+};
+```
+
+### Material3Theme
+
+Represents a complete theme with both light and dark schemes:
+
+```typescript
+export type Material3Theme = {
+  light: Material3Scheme;
+  dark: Material3Scheme;
+};
+```
+
+### Material3ThemeOptions
+
+Options for customizing theme generation:
+
+```typescript
+export interface Material3ThemeOptions {
+  /**
+   * Enable color fidelity for the theme.
+   *
+   * https://m3.material.io/styles/color/advanced/adjust-existing-colors#cb49eeb4-3bbd-4521-9612-0856c27f91ef
+   * @default false
+   * */
+  colorFidelity?: boolean;
+}
+```
+
+## Using Types in Your App
+
+### Basic Type Usage
+
+```typescript
+import { useMaterial3Theme, Material3Theme } from '@pchmn/expo-material3-theme';
+import { useState } from 'react';
+
+function App() {
+  const { theme } = useMaterial3Theme();
+  const [customTheme, setCustomTheme] = useState<Material3Theme | null>(null);
+
+  // theme is fully typed as Material3Theme
+  const currentTheme = customTheme || theme;
+  
+  return (
+    <View style={{ backgroundColor: currentTheme.light.background }}>
+      {/* Your components */}
+    </View>
+  );
+}
+```
+
+### Type-Safe Color Access
+
+```typescript
+import { Material3Scheme } from '@pchmn/expo-material3-theme';
+import { useColorScheme } from 'react-native';
+
+function ThemedComponent() {
+  const { theme } = useMaterial3Theme();
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors: Material3Scheme = theme[colorScheme];
+
+  return (
+    <View style={{ backgroundColor: colors.surface }}>
+      <Text style={{ color: colors.onSurface }}>Hello</Text>
+    </View>
+  );
+}
+```
+
+## Overriding react-native-paper Types
+
+`react-native-paper`'s `MD3Theme` doesn't include all the colors available in `Material3Scheme`. To get full type safety when using both libraries together, create a custom typed hook.
+
+### The useAppTheme Pattern
+
+From the README, here's the recommended pattern:
+
+```typescript
+import { Material3Scheme } from '@pchmn/expo-material3-theme';
+import { MD3Theme, useTheme } from 'react-native-paper';
+
+// Create a typed hook that extends MD3Theme with Material3Scheme colors
+export const useAppTheme = useTheme<MD3Theme & { colors: Material3Scheme }>;
+
+
+// Now use useAppTheme() instead of useTheme() throughout your app
+```
+
+### Using useAppTheme in Components
+
+```typescript
+import { useAppTheme } from './useAppTheme';
+
+function MyComponent() {
+  const theme = useAppTheme();
+
+  // Now you have access to all Material3Scheme colors with full type safety
+  return (
+    <View style={{ backgroundColor: theme.colors.surfaceContainer }}>
+      <Text style={{ color: theme.colors.onSurface }}>Typed content</Text>
+    </View>
+  );
+}
+```
+
+### Extra Colors Not in react-native-paper
+
+These additional colors from `Material3Scheme` (see `src/ExpoMaterial3Theme.types.ts:54-61`) are not present in `react-native-paper`'s default theme:
+
+- `surfaceContainer`
+- `surfaceContainerLow`
+- `surfaceContainerLowest`
+- `surfaceContainerHigh`
+- `surfaceContainerHighest`
+- `surfaceBright`
+- `surfaceDim`
+- `surfaceTint`
+
+By using the `useAppTheme` pattern, you get TypeScript autocomplete and type checking for these additional colors.
+
+## Complete Type-Safe Integration
+
+Here's a complete example with full TypeScript support:
+
+```typescript
+import { Material3Scheme, useMaterial3Theme } from '@pchmn/expo-material3-theme';
+import { useMemo } from 'react';
+import { useColorScheme } from 'react-native';
+import { 
+  MD3DarkTheme, 
+  MD3LightTheme, 
+  MD3Theme,
+  Provider as PaperProvider,
+  useTheme 
+} from 'react-native-paper';
+
+// Custom typed hook
+export const useAppTheme = useTheme<MD3Theme & { colors: Material3Scheme }>;
+
+function App() {
+  const colorScheme = useColorScheme();
+  const { theme } = useMaterial3Theme();
+
+  const paperTheme = useMemo(
+    () =>
+      colorScheme === 'dark' 
+        ? { ...MD3DarkTheme, colors: theme.dark } 
+        : { ...MD3LightTheme, colors: theme.light },
+    [colorScheme, theme]
+  );
+
+  return (
+    <PaperProvider theme={paperTheme}>
+      <AppContent />
+    </PaperProvider>
+  );
+}
+
+function AppContent() {
+  const theme = useAppTheme();
+
+  // Full type safety for all Material3Scheme colors
+  return (
+    <View style={{ 
+      backgroundColor: theme.colors.surfaceContainerLow,
+      borderColor: theme.colors.outlineVariant 
+    }}>
+      <Text style={{ color: theme.colors.onSurface }}>
+        Fully typed component
+      </Text>
+    </View>
+  );
+}
+```
+
+## Type Imports from Source
+
+When working with the library, you can import types directly:
+
+```typescript
+// Main types
+import type { 
+  Material3Theme,
+  Material3Scheme,
+  Material3ThemeOptions 
+} from '@pchmn/expo-material3-theme';
+
+// Internal types (if needed)
+import type { SystemScheme } from '@pchmn/expo-material3-theme';
+```
+
+<Note>
+All types are exported from the main package entry point (`src/index.ts:114`), so you don't need to import from specific files.
+</Note>
+
+<Tip>
+Use the `useAppTheme` pattern in every file where you need theme access. Consider creating a shared `hooks/useAppTheme.ts` file that all components can import.
+</Tip>
+
+## Type-Safe Theme Updates
+
+```typescript
+import { useMaterial3Theme, Material3ThemeOptions } from '@pchmn/expo-material3-theme';
+
+function ThemeCustomizer() {
+  const { updateTheme, resetTheme } = useMaterial3Theme();
+
+  const handleUpdateTheme = (color: string) => {
+    const options: Material3ThemeOptions = {
+      colorFidelity: true
+    };
+    updateTheme(color, options);
+  };
+
+  return (
+    <>
+      <Button onPress={() => handleUpdateTheme('#FF5722')}>
+        Update Theme
+      </Button>
+      <Button onPress={resetTheme}>
+        Reset Theme
+      </Button>
+    </>
+  );
+}
+```

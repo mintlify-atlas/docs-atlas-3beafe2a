@@ -1,0 +1,102 @@
+---
+title: Material3Theme
+description: Type definition for a complete Material 3 theme containing both light and dark color schemes
+---
+
+## Overview
+
+`Material3Theme` is the primary type that represents a complete Material 3 theme. It contains both light and dark color schemes, allowing your app to support both light and dark modes.
+
+## Type Definition
+
+```typescript
+export type Material3Theme = {
+  light: Material3Scheme;
+  dark: Material3Scheme;
+};
+```
+
+## Structure
+
+A `Material3Theme` object has two properties:
+
+- `light` - A [`Material3Scheme`](/api/types/material3-scheme) containing all colors for light mode
+- `dark` - A [`Material3Scheme`](/api/types/material3-scheme) containing all colors for dark mode
+
+Each scheme contains all the Material 3 color tokens needed to theme your application, including primary colors, surface colors, error colors, and elevation levels.
+
+## Usage Examples
+
+### Getting a theme
+
+```typescript
+import { getMaterial3Theme } from 'expo-material3-theme';
+
+const theme = getMaterial3Theme();
+
+// Access light mode colors
+console.log(theme.light.primary);
+console.log(theme.light.surface);
+
+// Access dark mode colors
+console.log(theme.dark.primary);
+console.log(theme.dark.surface);
+```
+
+### Using with React state
+
+```typescript
+import { useState } from 'react';
+import { getMaterial3Theme, Material3Theme } from 'expo-material3-theme';
+
+function App() {
+  const [theme, setTheme] = useState<Material3Theme>(getMaterial3Theme());
+  const [isDark, setIsDark] = useState(false);
+
+  const colors = isDark ? theme.dark : theme.light;
+
+  return (
+    <View style={{ backgroundColor: colors.background }}>
+      <Text style={{ color: colors.onBackground }}>Hello World</Text>
+    </View>
+  );
+}
+```
+
+### Creating a custom theme
+
+```typescript
+import { createMaterial3Theme } from 'expo-material3-theme';
+
+const customTheme = createMaterial3Theme('#FF5722');
+
+console.log(customTheme.light.primary); // Generated from source color
+console.log(customTheme.dark.primary);  // Generated from source color
+```
+
+### Using with the hook
+
+```typescript
+import { useMaterial3Theme } from 'expo-material3-theme';
+
+function ThemedComponent() {
+  const { theme, updateTheme, resetTheme } = useMaterial3Theme();
+
+  return (
+    <View>
+      <Button 
+        title="Change Theme" 
+        onPress={() => updateTheme('#00BCD4')}
+      />
+      <Button 
+        title="Reset Theme" 
+        onPress={resetTheme}
+      />
+    </View>
+  );
+}
+```
+
+## Related Types
+
+- [`Material3Scheme`](/api/types/material3-scheme) - The color scheme type used for both light and dark modes
